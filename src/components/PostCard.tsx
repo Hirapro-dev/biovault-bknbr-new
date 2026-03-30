@@ -63,18 +63,17 @@ export default function PostCard({ post, variant = "grid", basePath }: PostCardP
     return (
       <Link href={href} className="group block">
         <article className="flex gap-6 py-8 border-b border-black/10">
-          <div className="w-[360px] shrink-0 rounded-sm overflow-hidden bg-black/5">
+          <div className="w-[360px] shrink-0 aspect-video relative rounded-sm overflow-hidden bg-black/5">
             {post.eyecatch ? (
               <Image
                 src={post.eyecatch}
                 alt={post.title}
-                width={720}
-                height={405}
-                className="object-cover w-full h-auto group-hover:scale-105 transition-transform duration-500"
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-500"
                 sizes="360px"
               />
             ) : (
-              <div className="aspect-video flex items-center justify-center bg-black/5">
+              <div className="w-full h-full flex items-center justify-center bg-black/5">
                 <span className="font-black text-3xl text-black/20">KWR</span>
               </div>
             )}
@@ -108,18 +107,17 @@ export default function PostCard({ post, variant = "grid", basePath }: PostCardP
   return (
     <Link href={href} className="group block">
       <article>
-        <div className="rounded-sm overflow-hidden bg-black/5">
+        <div className="aspect-video relative rounded-sm overflow-hidden bg-black/5">
           {post.eyecatch ? (
             <Image
               src={post.eyecatch}
               alt={post.title}
-              width={600}
-              height={338}
-              className="object-cover w-full h-auto group-hover:scale-105 transition-transform duration-500"
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
               sizes="(max-width: 768px) 50vw, 33vw"
             />
           ) : (
-            <div className="aspect-video flex items-center justify-center bg-black/5">
+            <div className="w-full h-full flex items-center justify-center bg-black/5">
               <span className="font-black text-2xl text-black/20">KWR</span>
             </div>
           )}
