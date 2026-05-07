@@ -138,3 +138,16 @@ model LineTemplate {
 
   @@map("line_templates")
 }
+
+// サービス紹介バナー（/service ページに表示）
+model Service {
+  id        Int      @id @default(autoincrement())
+  label     String   // 表示名（alt属性・ホバー時にも利用）
+  url       String   // リンク先URL
+  imageUrl  String?  // バナー画像URL
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("services")
+}
