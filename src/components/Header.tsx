@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 type HeaderProps = {
-  variant?: "gen" | "vip" | "vc" | "wel";
+  variant?: "gen" | "vip" | "wel";
   /** ロゴのリンク先（未指定時は /gen） */
   homeHref?: string;
 };
@@ -17,11 +17,10 @@ export default function Header({ variant = "gen", homeHref = "/gen" }: HeaderPro
             <Image
               src={
                 variant === "vip" ? "/header_logo_vip.png"
-                : variant === "vc" ? "/header_logo_vc.png"
                 : variant === "wel" ? "/header_logo_wel.png"
                 : "/header_logo.png"
               }
-              alt="投資のKAWARA版.com"
+              alt="投資の脱炭素マーケット.com"
               width={200}
               height={40}
               className="h-8 sm:h-10 w-auto max-w-[250px] sm:max-w-none object-contain object-left"
@@ -31,10 +30,10 @@ export default function Header({ variant = "gen", homeHref = "/gen" }: HeaderPro
 
           {showContact && (
             <a
-              href="https://kawaraban.co.jp/form/contactall/"
+              href="https://carbon-market.com/form/mail/"
               target="_blank"
               rel="noopener noreferrer"
-              className={`btn btn-c shrink-0 whitespace-nowrap ${variant === "vip" || variant === "vc" || variant === "wel" ? "btn-c-header--full" : ""}`}
+              className={`btn btn-c shrink-0 whitespace-nowrap ${variant === "vip" || variant === "wel" ? "btn-c-header--full" : ""}`}
             >
               お問合わせ
               <span className="btn-c-icon" aria-hidden="true">

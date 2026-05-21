@@ -340,7 +340,7 @@ export default function ServicesPage() {
                   type="text"
                   value={label}
                   onChange={(e) => setLabel(e.target.value)}
-                  placeholder="例: 投資のKAWARA版"
+                  placeholder="例: 投資の脱炭素マーケット"
                   className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400"
                 />
               </div>

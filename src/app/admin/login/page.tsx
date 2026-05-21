@@ -42,7 +42,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-text">管理画面ログイン</h1>
-          <p className="text-text-light text-sm mt-1">投資の“KAWARA”版.com</p>
+          <p className="text-text-light text-sm mt-1">投資の脱炭素マーケット.com</p>
         </div>
 
         <form

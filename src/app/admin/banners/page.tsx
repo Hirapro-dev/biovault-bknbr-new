@@ -13,7 +13,6 @@ const MEDIA_LABELS: Record<string, { label: string; color: string; bgColor: stri
   all: { label: "全媒体", color: "text-slate-700", bgColor: "bg-slate-100" },
   gen: { label: "一般会員", color: "text-blue-700", bgColor: "bg-blue-50" },
   vip: { label: "正会員", color: "text-emerald-700", bgColor: "bg-emerald-50" },
-  vc: { label: "仮想通貨長者", color: "text-purple-700", bgColor: "bg-purple-50" },
 };
 
 export default function BannersPage() {

@@ -24,7 +24,6 @@ type LineImageGeneratorProps = {
   eyecatchUrl: string | null;
   showForGen: boolean;
   showForVip: boolean;
-  showForVC: boolean;
   showForWel: boolean;
 };
 
@@ -138,7 +137,6 @@ export default function LineImageGenerator({
   eyecatchUrl,
   showForGen,
   showForVip,
-  showForVC,
 }: LineImageGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [editorTab, setEditorTab] = useState<EditorTab>("edit");
@@ -160,7 +158,7 @@ export default function LineImageGenerator({
 
   // 画像化の状態
   const [generating, setGenerating] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<Record<Variant, string | null>>({ gen: null, vip: null, vc: null });
+  const [generatedImages, setGeneratedImages] = useState<Record<Variant, string | null>>({ gen: null, vip: null });
   const [activeVariant, setActiveVariant] = useState<Variant>("gen");
 
   // テンプレート
@@ -175,7 +173,6 @@ export default function LineImageGenerator({
   const enabledVariants: Variant[] = [];
   if (showForGen) enabledVariants.push("gen");
   if (showForVip) enabledVariants.push("vip");
-  if (showForVC) enabledVariants.push("vc");
 
   // スタイル更新ヘルパー
   const updateStyle = useCallback(<K extends keyof LineImageStyles>(key: K, value: LineImageStyles[K]) => {

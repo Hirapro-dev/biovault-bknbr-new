@@ -13,7 +13,7 @@ export async function PUT(
   try {
     const body = await request.json();
     const { label, url, imageUrl, order, media } = body;
-    const validMedia = media && ["all", "gen", "vip", "vc"].includes(media) ? media : undefined;
+    const validMedia = media && ["all", "gen", "vip"].includes(media) ? media : undefined;
     const banner = await prisma.banner.update({
       where: { id },
       data: {

@@ -71,7 +71,7 @@ export const DEFAULT_STYLES: LineImageStyles = {
   titleColor: "#000000",
   fromFontSize: 26,
   fromColor: "#4b5563",
-  fromPrefix: "From：KAWARA版",
+  fromPrefix: "From：脱炭素マーケット",
   avatarSize: 200,
   avatarShow: true,
   avatarAlign: "left",
@@ -102,23 +102,18 @@ export const DEFAULT_STYLES: LineImageStyles = {
   paddingTop: 60,
 };
 
-export type Variant = "gen" | "vip" | "vc";
+export type Variant = "gen" | "vip";
 
 export const VARIANT_CONFIG: Record<Variant, { label: string; headerText: string; headerGradient: [string, string] }> = {
   gen: {
     label: "一般会員",
-    headerText: '投資の"KAWARA"版.com',
+    headerText: "投資の脱炭素マーケット.com",
     headerGradient: ["#1e40af", "#3b82f6"],
   },
   vip: {
     label: "正会員",
-    headerText: '投資の"KAWARA"版.com',
+    headerText: "投資の脱炭素マーケット.com",
     headerGradient: ["#991b1b", "#ef4444"],
-  },
-  vc: {
-    label: "VC長者",
-    headerText: "仮想通貨長者.com",
-    headerGradient: ["#374151", "#111827"],
   },
 };
 

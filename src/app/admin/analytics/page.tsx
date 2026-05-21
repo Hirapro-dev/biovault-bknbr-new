@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FiArrowLeft, FiEye, FiMousePointer, FiBarChart2, FiChevronDown, FiExternalLink } from "react-icons/fi";
 
-type PostSummary = { id: number; title: string; views: number; published: boolean; createdAt: string; scheduledAt: string | null; showForGen?: boolean; showForVip?: boolean; showForVC?: boolean; writer?: { id: number; name: string } | null };
+type PostSummary = { id: number; title: string; views: number; published: boolean; createdAt: string; scheduledAt: string | null; showForGen?: boolean; showForVip?: boolean; writer?: { id: number; name: string } | null };
 type Writer = { id: number; name: string };
 type PostDetail = {
   post: { id: number; title: string; views: number };
@@ -16,13 +16,12 @@ type PostDetail = {
 };
 
 type Period = "all" | "monthly" | "daily";
-type MediaTab = "gen" | "vip" | "vc";
+type MediaTab = "gen" | "vip";
 
 // 媒体タブの定義
 const MEDIA_TABS: { key: MediaTab; label: string; color: string; bgColor: string }[] = [
   { key: "gen", label: "一般会員", color: "text-blue-700", bgColor: "bg-blue-50" },
   { key: "vip", label: "正会員", color: "text-emerald-700", bgColor: "bg-emerald-50" },
-  { key: "vc", label: "仮想通貨長者", color: "text-purple-700", bgColor: "bg-purple-50" },
 ];
 
 export default function AnalyticsPage() {
@@ -40,7 +39,7 @@ function AnalyticsContent() {
   const [detail, setDetail] = useState<PostDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [period, setPeriod] = useState<Period>("daily");
-  const [viewSource, setViewSource] = useState<"all" | "public" | "gen" | "vip" | "vc">("all");
+  const [viewSource, setViewSource] = useState<"all" | "public" | "gen" | "vip">("all");
   const [writers, setWriters] = useState<Writer[]>([]);
   const [filterWriterId, setFilterWriterId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<MediaTab>("gen");
@@ -115,11 +114,9 @@ function AnalyticsContent() {
   const memberLabel = (p: PostSummary) => {
     const g = p.showForGen !== false;
     const f = p.showForVip !== false;
-    const vc = p.showForVC === true;
     const parts: string[] = [];
     if (g) parts.push("一般");
     if (f) parts.push("正");
-    if (vc) parts.push("VC");
     return parts.length > 0 ? parts.join("・") : "—";
   };
 
@@ -249,13 +246,12 @@ function AnalyticsContent() {
                       <h3 className="font-bold text-sm text-slate-900 break-words min-w-0">{detail.post.title}</h3>
                       <div className="flex flex-wrap items-center gap-2 shrink-0">
                         <div className="relative">
-                          <select value={viewSource} onChange={(e) => setViewSource(e.target.value as "all" | "public" | "gen" | "vip" | "vc")}
+                          <select value={viewSource} onChange={(e) => setViewSource(e.target.value as "all" | "public" | "gen" | "vip")}
                             className="appearance-none text-xs border border-slate-200 rounded-lg px-3 py-1.5 pr-7 bg-white focus:outline-none focus:border-blue-400 cursor-pointer">
                             <option value="all">全会員</option>
                             <option value="public">公開のみ</option>
                             <option value="gen">一般会員</option>
                             <option value="vip">正会員</option>
-                            <option value="vc">仮想通貨長者</option>
                           </select>
                           <FiChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         </div>

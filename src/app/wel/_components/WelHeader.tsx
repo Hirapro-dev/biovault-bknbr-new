@@ -11,7 +11,7 @@ export default function WelHeader({ homeHref = "/wel" }: Props) {
     <header className="wel-header">
       <div className="wel-header-inner">
         <Link href={homeHref} className="wel-header-title">
-          <small>投資のKAWARA版.com</small>
+          <small>投資の脱炭素マーケット.com</small>
           “次世代ウェルネス”×“資産形成”
         </Link>
       </div>
