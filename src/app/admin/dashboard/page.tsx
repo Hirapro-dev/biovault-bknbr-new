@@ -24,13 +24,12 @@ type Post = {
 
 type Writer = { id: number; name: string };
 type SortKey = "newest" | "oldest" | "views_desc" | "views_asc";
-type MediaTab = "gen" | "vip" | "wel";
+type MediaTab = "gen" | "vip";
 
 // 媒体タブの定義
 const MEDIA_TABS: { key: MediaTab; label: string; color: string; bgColor: string; borderColor: string }[] = [
   { key: "gen", label: "一般会員", color: "text-blue-700", bgColor: "bg-blue-50", borderColor: "border-blue-500" },
   { key: "vip", label: "正会員", color: "text-emerald-700", bgColor: "bg-emerald-50", borderColor: "border-emerald-500" },
-  { key: "wel", label: "ウェルネス", color: "text-pink-700", bgColor: "bg-pink-50", borderColor: "border-pink-500" },
 ];
 
 type StatsData = {
@@ -152,7 +151,6 @@ export default function AdminDashboard() {
     .filter((p) => {
       if (activeTab === "gen") return p.showForGen !== false;
       if (activeTab === "vip") return p.showForVip !== false;
-      if (activeTab === "wel") return p.showForWel === true;
       return true;
     })
     .sort((a, b) => {
