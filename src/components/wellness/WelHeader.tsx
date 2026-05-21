@@ -1,12 +1,12 @@
 import Link from "next/link";
 
 type Props = {
-  /** ロゴクリック時の遷移先（未指定時は /wel） */
+  /** ロゴクリック時の遷移先（未指定時は /gen） */
   homeHref?: string;
 };
 
-/** ウェルネス媒体専用ヘッダー（ワインレッド × ゴールド） */
-export default function WelHeader({ homeHref = "/wel" }: Props) {
+/** ウェルネスデザイン専用ヘッダー（ワインレッド × ゴールド） */
+export default function WelHeader({ homeHref = "/gen" }: Props) {
   return (
     <header className="wel-header">
       <div className="wel-header-inner">

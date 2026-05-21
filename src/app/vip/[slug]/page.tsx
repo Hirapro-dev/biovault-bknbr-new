@@ -12,9 +12,9 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { FiArrowLeft, FiCalendar } from "react-icons/fi";
-import WelHeader from "@/app/wel/_components/WelHeader";
-import WelFooter from "@/app/wel/_components/WelFooter";
-import WelPostCard from "@/app/wel/_components/WelPostCard";
+import WelHeader from "@/components/wellness/WelHeader";
+import WelFooter from "@/components/wellness/WelFooter";
+import WelPostCard from "@/components/wellness/WelPostCard";
 
 type Writer = {
   id: number;

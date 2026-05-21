@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 type HeaderProps = {
-  variant?: "gen" | "vip" | "wel";
+  variant?: "gen" | "vip";
   /** ロゴのリンク先（未指定時は /gen） */
   homeHref?: string;
 };
@@ -17,7 +17,6 @@ export default function Header({ variant = "gen", homeHref = "/gen" }: HeaderPro
             <Image
               src={
                 variant === "vip" ? "/header_logo_vip.png"
-                : variant === "wel" ? "/header_logo_wel.png"
                 : "/header_logo.png"
               }
               alt="投資の脱炭素マーケット.com"
@@ -33,7 +32,7 @@ export default function Header({ variant = "gen", homeHref = "/gen" }: HeaderPro
               href="https://carbon-market.com/form/mail/"
               target="_blank"
               rel="noopener noreferrer"
-              className={`btn btn-c shrink-0 whitespace-nowrap ${variant === "vip" || variant === "wel" ? "btn-c-header--full" : ""}`}
+              className={`btn btn-c shrink-0 whitespace-nowrap ${variant === "vip" ? "btn-c-header--full" : ""}`}
             >
               お問合わせ
               <span className="btn-c-icon" aria-hidden="true">
