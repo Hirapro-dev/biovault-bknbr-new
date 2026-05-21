@@ -48,7 +48,7 @@ function Dropdown({ label, icon, children, dark = false }: { label: string; icon
   }, []);
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs ${dark ? "text-slate-300 hover:text-white hover:bg-slate-600" : "text-slate-500 hover:text-blue-600 hover:bg-blue-50"}`} title={label}>
+      <button onClick={() => setOpen(!open)} className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${dark ? "text-slate-300 hover:text-white hover:bg-slate-600" : "text-slate-500 hover:text-blue-600 hover:bg-blue-50"}`} title={label}>
         {icon}<FiChevronDown size={12} />
       </button>
       {open && (
@@ -111,7 +111,7 @@ function ButtonColorPopup({ onSelect, dark = false }: { onSelect: (color: string
   }, []);
   return (
     <div ref={ref} className="relative">
-      <button onClick={() => setOpen(!open)} className={`flex items-center gap-1 px-2 py-1.5 rounded-lg transition-colors text-xs ${dark ? "text-slate-300 hover:text-white hover:bg-slate-600" : "text-slate-500 hover:text-blue-600 hover:bg-blue-50"}`} title="ボタン">
+      <button onClick={() => setOpen(!open)} className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs ${dark ? "text-slate-300 hover:text-white hover:bg-slate-600" : "text-slate-500 hover:text-blue-600 hover:bg-blue-50"}`} title="ボタン">
         <ButtonIcon size={14} /><FiChevronDown size={12} />
       </button>
       {open && (
@@ -135,7 +135,7 @@ function ButtonColorPopup({ onSelect, dark = false }: { onSelect: (color: string
   );
 }
 
-const TB = "p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors";
+const TB = "px-2 py-1 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors";
 
 export default function EditorToolbar({
   mode, uploading, customEditors = [],
@@ -146,7 +146,7 @@ export default function EditorToolbar({
   return (
     <div className={`fixed top-12 md:top-14 left-0 right-0 z-40 border-b shadow-sm ${mode === "code" ? "bg-slate-800 border-slate-600" : "bg-white border-slate-200"}`}>
       {/* モバイル: 1行にモード切替+展開ボタン、デスクトップ: 従来通り折り返し */}
-      <div className="max-w-4xl mx-auto px-2 md:px-4 py-1 md:py-1.5">
+      <div className="max-w-4xl mx-auto px-2 md:px-4 py-0.5 md:py-1">
         {/* モバイル用: モード切替 + 展開ボタンを1行に */}
         <div className="flex items-center gap-1 md:hidden">
           <button onClick={onToggleMode}
@@ -342,7 +342,7 @@ export default function EditorToolbar({
 
             <button onClick={onInsertLink} className={TB} title="リンク"><FiLink size={14} /></button>
             <button onClick={onInsertImage} disabled={uploading} className={`${TB} disabled:opacity-50`} title="画像"><FiImage size={14} /></button>
-            <button onClick={onInsertYoutube} className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="YouTube"><FiYoutube size={14} /></button>
+            <button onClick={onInsertYoutube} className="px-2 py-1 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="YouTube"><FiYoutube size={14} /></button>
 
             <div className="w-px h-5 bg-slate-200 mx-1" />
 
