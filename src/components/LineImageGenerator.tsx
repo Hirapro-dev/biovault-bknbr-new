@@ -212,7 +212,7 @@ export default function LineImageGenerator({
       setEditBody(bodyText || "");
       setEditWriter(writerName || "");
       setInitialized(true);
-      setGeneratedImages({ gen: null, vip: null, vc: null });
+      setGeneratedImages({ gen: null, vip: null });
     }
     if (!isOpen) {
       setInitialized(false);
@@ -273,9 +273,9 @@ export default function LineImageGenerator({
   const handleGenerateAll = useCallback(async () => {
     if (enabledVariants.length === 0) return;
     setGenerating(true);
-    setGeneratedImages({ gen: null, vip: null, vc: null });
+    setGeneratedImages({ gen: null, vip: null });
 
-    const results: Record<Variant, string | null> = { gen: null, vip: null, vc: null };
+    const results: Record<Variant, string | null> = { gen: null, vip: null };
 
     for (const v of enabledVariants) {
       try {
@@ -319,7 +319,7 @@ export default function LineImageGenerator({
   };
 
   const handleReEdit = () => {
-    setGeneratedImages({ gen: null, vip: null, vc: null });
+    setGeneratedImages({ gen: null, vip: null });
   };
 
   /** テンプレートとして保存 */
