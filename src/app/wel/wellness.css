@@ -1,0 +1,417 @@
+/* ===========================================================
+ * ウェルネス媒体専用スタイル（/wel 配下のみ適用）
+ * レイアウト構造は既存ページ（/vc 等）を踏襲。
+ * このCSSは「色・タイポグラフィ・装飾の上書き」だけを担当する。
+ * 参考デザイン: https://mrt.co.jp/wellness/
+ * =========================================================== */
+
+[data-theme="wel"] {
+  /* カラーパレット */
+  --wel-wine: #5a1a2b;
+  --wel-wine-deep: #3d0f1d;
+  --wel-wine-soft: #7a2438;
+  --wel-paper: #f5ecdc;
+  --wel-paper-dark: #ede1cb;
+  --wel-ink: #2a1810;
+  --wel-ink-soft: #5a4838;
+  --wel-gold: #b08a3e;
+  --wel-line: #c9b58a;
+  --wel-gradient-wine: linear-gradient(135deg, #2b0305 0%, #a12324 50%, #2b0305 100%);
+  --wel-gradient-gold: linear-gradient(135deg, #715419 0%, #f9e3ab 50%, #715419 100%);
+
+  background: url("/contants_bg.png");
+  color: var(--wel-ink);
+  font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', sans-serif;
+  letter-spacing: 0.04em;
+  font-feature-settings: "palt";
+}
+
+/* ===== コンテンツbox（紙の枠） =====
+ * 一覧ページ・記事ページ共通でメインコンテンツを囲む紙風の枠。
+ * 背景は box_bg.png（PC） / box_bg_sp.png（SP）。
+ * 左右に金色の縦罫線を装飾。
+ */
+[data-theme="wel"] .wel-box {
+  background: url("/box_bg.png");
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  box-shadow:
+    0 0 60px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(176, 138, 62, 0.3) inset;
+  position: relative;
+  margin: 32px auto;
+  padding: 48px 36px;
+  max-width: 1180px;
+}
+
+/* 紙の右側に縦の装飾ライン */
+[data-theme="wel"] .wel-box::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--wel-line) 10%,
+    var(--wel-line) 90%,
+    transparent 100%
+  );
+  opacity: 0.5;
+  pointer-events: none;
+  right: 20px;
+}
+
+@media (max-width: 768px) {
+  [data-theme="wel"] .wel-box {
+    background: url("/box_bg_sp.png");
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
+    margin: 0 auto;
+    padding: 0 16px 16px;
+  }
+  [data-theme="wel"] .wel-box::after { right: 10px; }
+}
+
+/* 記事詳細用は最大幅をやや絞る */
+[data-theme="wel"] .wel-box--article {
+  max-width: 760px;
+}
+@media (max-width: 768px) {
+  [data-theme="wel"] .wel-box--article {
+    padding: 32px 16px;
+  }
+}
+
+/* ===== ヘッダー（独自） ===== */
+[data-theme="wel"] .wel-header {
+  background: var(--wel-gradient-wine);
+  border-bottom: 1px solid var(--wel-gold);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+[data-theme="wel"] .wel-header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+[data-theme="wel"] .wel-header-title {
+  font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Sawarabi Mincho", "Noto Serif JP", serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--wel-paper);
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  line-height: 1.7;
+}
+[data-theme="wel"] .wel-header-title small {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--wel-line);
+  margin-bottom: 2px;
+}
+@media (max-width: 768px) {
+  [data-theme="wel"] .wel-header-inner { padding: 12px 16px; }
+  [data-theme="wel"] .wel-header-title {
+    font-size: 16px;
+    letter-spacing: 0.08em;
+  }
+}
+
+/* ===== フッター（独自） ===== */
+[data-theme="wel"] .wel-footer {
+  background: var(--wel-gradient-wine);
+  color: var(--wel-paper);
+  padding: 40px 24px;
+  text-align: center;
+  position: relative;
+}
+[data-theme="wel"] .wel-footer::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(245, 236, 220, 0.3);
+  pointer-events: none;
+}
+[data-theme="wel"] .wel-footer-inner {
+  max-width: 800px;
+  margin: 0 auto;
+}
+[data-theme="wel"] .wel-footer-brand {
+  font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Sawarabi Mincho", "Noto Serif JP", serif;
+  font-size: 18px;
+  letter-spacing: 0.3em;
+  color: var(--wel-paper);
+  margin-bottom: 12px;
+}
+[data-theme="wel"] .wel-footer-copy {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--wel-line);
+}
+
+/* ===== セクション見出し（既存ページの h2.text-2xl の上書き相当） ===== */
+[data-theme="wel"] .wel-section-title {
+  font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Sawarabi Mincho", "Noto Serif JP", serif;
+  font-weight: 600;
+  color: var(--wel-wine-deep);
+  letter-spacing: 0.08em;
+  position: relative;
+  padding-left: 18px;
+}
+[data-theme="wel"] .wel-section-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--wel-wine) 0%, var(--wel-gold) 100%);
+}
+[data-theme="wel"] .wel-section-sub {
+  color: var(--wel-gold);
+  letter-spacing: 0.15em;
+}
+
+/* ===== カテゴリタブ（既存ページの「すべて」「カテゴリ名」上書き） ===== */
+[data-theme="wel"] .wel-cat-tab {
+  padding: 8px 18px;
+  border-radius: 0;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  border: 1px solid var(--wel-line);
+  background: transparent;
+  color: var(--wel-ink-soft);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+[data-theme="wel"] .wel-cat-tab:hover {
+  border-color: var(--wel-gold);
+  color: var(--wel-wine-deep);
+  background: rgba(245, 236, 220, 0.5);
+}
+[data-theme="wel"] .wel-cat-tab.is-active {
+  background: var(--wel-gradient-wine);
+  color: var(--wel-paper);
+  border-color: var(--wel-wine-deep);
+}
+
+/* ===== 検索フォーム（サイドバー / モバイル用） ===== */
+[data-theme="wel"] .wel-search-form input {
+  border: 1px solid var(--wel-line) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  color: var(--wel-ink) !important;
+  border-radius: 0 !important;
+}
+[data-theme="wel"] .wel-search-form input::placeholder {
+  color: var(--wel-ink-soft);
+  opacity: 0.55;
+}
+[data-theme="wel"] .wel-search-form input:focus {
+  outline: none;
+  border-color: var(--wel-gold) !important;
+  box-shadow: 0 0 0 2px rgba(176, 138, 62, 0.2);
+}
+[data-theme="wel"] .wel-search-form button {
+  background: var(--wel-gradient-gold);
+  color: #141209;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  padding: 6px 14px;
+  border: 1px solid var(--wel-gold);
+  font-size: 12px;
+}
+
+/* ===== バナー（紙風枠線） ===== */
+[data-theme="wel"] .wel-banner {
+  border: 1px solid var(--wel-line) !important;
+  background: #fff;
+}
+[data-theme="wel"] .wel-banner p {
+  color: var(--wel-wine-deep) !important;
+  letter-spacing: 0.04em;
+}
+
+/* ===== ページネーション（既存 Pagination 上書き） ===== */
+[data-theme="wel"] .wel-pagination a,
+[data-theme="wel"] .wel-pagination span {
+  border-color: var(--wel-line) !important;
+  color: var(--wel-ink-soft) !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  border-radius: 0 !important;
+}
+[data-theme="wel"] .wel-pagination a:hover {
+  background: var(--wel-paper) !important;
+  color: var(--wel-wine-deep) !important;
+}
+[data-theme="wel"] .wel-pagination .is-current,
+[data-theme="wel"] .wel-pagination [aria-current="page"] {
+  background: var(--wel-gradient-wine) !important;
+  color: var(--wel-paper) !important;
+  border-color: var(--wel-wine-deep) !important;
+}
+
+/* ===== 区切り装飾 ===== */
+[data-theme="wel"] .wel-divider {
+  text-align: center;
+  margin: 24px 0;
+  color: var(--wel-wine);
+  font-size: 14px;
+  letter-spacing: 0.3em;
+}
+[data-theme="wel"] .wel-divider::before,
+[data-theme="wel"] .wel-divider::after {
+  content: "";
+  display: inline-block;
+  width: 60px;
+  height: 1px;
+  background: var(--wel-line);
+  vertical-align: middle;
+  margin: 0 20px;
+}
+
+/* ===== 既存ページの border-black/10 等を金線に置き換え（スコープ内） ===== */
+[data-theme="wel"] .wel-border-line {
+  border-color: var(--wel-line) !important;
+}
+
+/* ===== 記事詳細：タイトル ===== */
+[data-theme="wel"] .wel-article-title {
+  font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Sawarabi Mincho", "Noto Serif JP", serif;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+  background: var(--wel-gradient-wine);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+[data-theme="wel"] .wel-article-meta {
+  color: var(--wel-gold);
+  letter-spacing: 0.15em;
+  margin-top: 16px;
+}
+
+/* ===== 記事本文（[data-article-content] 内のHTML向け） ===== */
+[data-theme="wel"] [data-article-content] {
+  font-size: 17px;
+  line-height: 2.0;
+  color: #333;
+}
+[data-theme="wel"] [data-article-content] h2 {
+  font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Sawarabi Mincho", "Noto Serif JP", serif;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--wel-wine-deep);
+  margin: 44px 0 18px;
+  padding-left: 18px;
+  position: relative;
+  letter-spacing: 0.06em;
+}
+[data-theme="wel"] [data-article-content] h2::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 4px;
+  background: linear-gradient(to bottom, var(--wel-wine) 0%, var(--wel-gold) 100%);
+}
+[data-theme="wel"] [data-article-content] h3 {
+  font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Sawarabi Mincho", "Noto Serif JP", serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--wel-wine-deep);
+  margin: 32px 0 14px;
+  letter-spacing: 0.04em;
+}
+[data-theme="wel"] [data-article-content] p { margin-bottom: 22px; }
+[data-theme="wel"] [data-article-content] strong {
+  font-weight: 700;
+  color: var(--wel-wine-deep);
+}
+[data-theme="wel"] [data-article-content] a {
+  color: var(--wel-wine);
+  text-decoration: underline;
+  text-decoration-color: var(--wel-gold);
+}
+[data-theme="wel"] [data-article-content] blockquote {
+  border-left: 3px solid var(--wel-gold);
+  background: rgba(176, 138, 62, 0.06);
+  padding: 16px 20px;
+  margin: 24px 0;
+  font-style: normal;
+  color: var(--wel-ink-soft);
+}
+
+/* リスト：・の代わりに check.png を使用 */
+[data-theme="wel"] [data-article-content] ul {
+  list-style: none;
+  padding: 0;
+  margin: 22px 0;
+}
+[data-theme="wel"] [data-article-content] ul li {
+  position: relative;
+  padding-left: 36px;
+  margin-bottom: 16px;
+  line-height: 1.7;
+  font-weight: 500;
+  background-image: url("/check.png");
+  background-repeat: no-repeat;
+  background-position: 0 0.2em;
+  background-size: 24px 24px;
+  list-style: none;
+}
+[data-theme="wel"] [data-article-content] ul.list-none li {
+  background-image: none;
+  padding-left: 1.2em;
+}
+[data-theme="wel"] [data-article-content] ol {
+  padding-left: 1.5em;
+  margin: 22px 0;
+}
+[data-theme="wel"] [data-article-content] ol li {
+  margin-bottom: 12px;
+  line-height: 1.7;
+}
+
+/* マーカー線 */
+[data-theme="wel"] [data-article-content] .underline,
+[data-theme="wel"] .wel-underline {
+  background: linear-gradient(transparent 84%, #b89d6b 84%, #b89d6b 100%, transparent 100%);
+  padding: 0 2px;
+}
+
+/* 戻るリンク */
+[data-theme="wel"] .wel-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--wel-wine);
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--wel-gold);
+  padding-bottom: 2px;
+}
+[data-theme="wel"] .wel-back-link:hover {
+  color: var(--wel-wine-deep);
+}
+
+/* 空状態のKWRロゴ風プレースホルダー */
+[data-theme="wel"] .wel-empty-mark {
+  font-family: "Yu Mincho", serif;
+  color: var(--wel-line);
+}

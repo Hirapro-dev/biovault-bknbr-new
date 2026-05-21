@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
-/** 閲覧元: 一般会員(gen) / 正会員(vip) / 仮想通貨長者(vc) */
-export default function ClickTracker({ postId, source }: { postId: number; source: "gen" | "vip" | "vc" }) {
+/** 閲覧元: 一般会員(gen) / 正会員(vip) / 仮想通貨長者(vc) / ウェルネス(wel) */
+export default function ClickTracker({ postId, source }: { postId: number; source: "gen" | "vip" | "vc" | "wel" }) {
   const tracked = useRef(false);
 
   // 閲覧数記録（source で一般会員/正会員を別計測）

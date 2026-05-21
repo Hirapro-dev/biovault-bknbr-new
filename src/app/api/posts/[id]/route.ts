@@ -34,7 +34,7 @@ export async function GET(
   } catch {
     const post = await prisma.post.findUnique({ where: { slug: id }, select: selectWithoutPickup });
       if (!post) return NextResponse.json({ error: "記事が見つかりません" }, { status: 404 });
-      return NextResponse.json({ ...post, isPickup: false, showForGen: true, showForVip: true, showForVC: false, showDate: true });
+      return NextResponse.json({ ...post, isPickup: false, showForGen: true, showForVip: true, showForVC: false, showForWel: false, showDate: true });
     }
   }
 
@@ -60,7 +60,7 @@ export async function PUT(
   const { id } = await params;
   try {
     const body = await request.json();
-    const { title, content, excerpt, eyecatch, published, scheduledAt, writerId, isPickup, showForGen, showForVip, showForVC, showDate, categoryIds } = body;
+    const { title, content, excerpt, eyecatch, published, scheduledAt, writerId, isPickup, showForGen, showForVip, showForVC, showForWel, showDate, categoryIds } = body;
 
     const isScheduled = scheduledAt && new Date(scheduledAt) > new Date();
 
@@ -74,6 +74,7 @@ export async function PUT(
       showForGen?: boolean;
       showForVip?: boolean;
       showForVC?: boolean;
+      showForWel?: boolean;
       showDate?: boolean;
       scheduledAt?: Date | null;
       writerId?: number | null;
@@ -84,6 +85,7 @@ export async function PUT(
       showForGen: showForGen !== undefined ? !!showForGen : undefined,
       showForVip: showForVip !== undefined ? !!showForVip : undefined,
       showForVC: showForVC !== undefined ? !!showForVC : undefined,
+      showForWel: showForWel !== undefined ? !!showForWel : undefined,
       showDate: showDate !== undefined ? !!showDate : undefined,
       scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
       writerId: writerId !== undefined ? (writerId ? parseInt(writerId) : null) : undefined,
@@ -113,7 +115,7 @@ export async function PUT(
       return NextResponse.json(post);
     } catch {
       // 旧カラムがない時は該当フィールドを外して再試行
-      const { isPickup: _o1, showForGen: _o2, showForVip: _o3, showForVC: _o4, showDate: _o5, ...dataFallback } = data;
+      const { isPickup: _o1, showForGen: _o2, showForVip: _o3, showForVC: _o4, showForWel: _o5, showDate: _o6, ...dataFallback } = data;
       const post = await prisma.post.update({
         where: { id: parseInt(id) },
         data: dataFallback,
@@ -125,6 +127,7 @@ export async function PUT(
         showForGen: showForGen !== undefined ? !!showForGen : true,
         showForVip: showForVip !== undefined ? !!showForVip : true,
         showForVC: showForVC !== undefined ? !!showForVC : false,
+        showForWel: showForWel !== undefined ? !!showForWel : false,
         showDate: showDate !== undefined ? !!showDate : true,
       });
     }

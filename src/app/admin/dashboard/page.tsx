@@ -16,6 +16,7 @@ type Post = {
   showForGen?: boolean;
   showForVip?: boolean;
   showForVC?: boolean;
+  showForWel?: boolean;
   createdAt: string; excerpt: string | null; eyecatch: string | null;
   views: number; scheduledAt: string | null;
   writer?: { id: number; name: string } | null;
@@ -24,13 +25,14 @@ type Post = {
 
 type Writer = { id: number; name: string };
 type SortKey = "newest" | "oldest" | "views_desc" | "views_asc";
-type MediaTab = "gen" | "vip" | "vc";
+type MediaTab = "gen" | "vip" | "vc" | "wel";
 
 // 媒体タブの定義
 const MEDIA_TABS: { key: MediaTab; label: string; color: string; bgColor: string; borderColor: string }[] = [
   { key: "gen", label: "一般会員", color: "text-blue-700", bgColor: "bg-blue-50", borderColor: "border-blue-500" },
   { key: "vip", label: "正会員", color: "text-emerald-700", bgColor: "bg-emerald-50", borderColor: "border-emerald-500" },
   { key: "vc", label: "仮想通貨長者", color: "text-purple-700", bgColor: "bg-purple-50", borderColor: "border-purple-500" },
+  { key: "wel", label: "ウェルネス", color: "text-pink-700", bgColor: "bg-pink-50", borderColor: "border-pink-500" },
 ];
 
 type StatsData = {
@@ -153,6 +155,7 @@ export default function AdminDashboard() {
       if (activeTab === "gen") return p.showForGen !== false;
       if (activeTab === "vip") return p.showForVip !== false;
       if (activeTab === "vc") return p.showForVC === true;
+      if (activeTab === "wel") return p.showForWel === true;
       return true;
     })
     .sort((a, b) => {
@@ -187,10 +190,12 @@ export default function AdminDashboard() {
     const g = p.showForGen !== false;
     const f = p.showForVip !== false;
     const vc = p.showForVC === true;
+    const wel = p.showForWel === true;
     const parts: string[] = [];
     if (g) parts.push("一般");
     if (f) parts.push("正");
     if (vc) parts.push("VC");
+    if (wel) parts.push("ウェルネス");
     return parts.length > 0 ? parts.join("・") : "—";
   };
 

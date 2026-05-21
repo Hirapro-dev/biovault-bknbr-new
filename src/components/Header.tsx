@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 type HeaderProps = {
-  variant?: "gen" | "vip" | "vc";
+  variant?: "gen" | "vip" | "vc" | "wel";
   /** ロゴのリンク先（未指定時は /gen） */
   homeHref?: string;
 };
@@ -15,7 +15,12 @@ export default function Header({ variant = "gen", homeHref = "/gen" }: HeaderPro
         <div className="py-2.5 flex items-center justify-between gap-2">
           <Link href={homeHref} className="flex items-center shrink min-w-0">
             <Image
-              src={variant === "vip" ? "/header_logo_vip.png" : variant === "vc" ? "/header_logo_vc.png" : "/header_logo.png"}
+              src={
+                variant === "vip" ? "/header_logo_vip.png"
+                : variant === "vc" ? "/header_logo_vc.png"
+                : variant === "wel" ? "/header_logo_wel.png"
+                : "/header_logo.png"
+              }
               alt="投資のKAWARA版.com"
               width={200}
               height={40}
@@ -29,7 +34,7 @@ export default function Header({ variant = "gen", homeHref = "/gen" }: HeaderPro
               href="https://kawaraban.co.jp/form/contactall/"
               target="_blank"
               rel="noopener noreferrer"
-              className={`btn btn-c shrink-0 whitespace-nowrap ${variant === "vip" || variant === "vc" ? "btn-c-header--full" : ""}`}
+              className={`btn btn-c shrink-0 whitespace-nowrap ${variant === "vip" || variant === "vc" || variant === "wel" ? "btn-c-header--full" : ""}`}
             >
               お問合わせ
               <span className="btn-c-icon" aria-hidden="true">

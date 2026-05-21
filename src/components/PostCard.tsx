@@ -66,14 +66,14 @@ export default function PostCard({ post, variant = "grid", basePath }: PostCardP
     return (
       <Link href={href} className="group block">
         <article className="flex gap-6 py-8 border-b border-black/10">
-          <div className="w-[360px] shrink-0 aspect-video relative rounded-sm overflow-hidden bg-black/5">
+          <div className="w-[240px] shrink-0 aspect-video relative rounded-sm overflow-hidden bg-black/5">
             {post.eyecatch ? (
               <Image
                 src={post.eyecatch}
                 alt={post.title}
                 fill
                 className="object-cover group-hover:scale-105 transition-transform duration-500"
-                sizes="360px"
+                sizes="240px"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-black/5">

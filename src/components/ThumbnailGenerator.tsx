@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { FiZap, FiRefreshCw, FiCheck, FiX, FiChevronDown, FiChevronUp, FiAlignLeft, FiAlignCenter, FiAlignRight } from "react-icons/fi";
 
 type StyleOption = { key: string; label: string };
+type ProviderOption = { key: "gemini" | "openai"; label: string; description: string };
 
 // スタイルアイコンのマッピング
 const STYLE_ICONS: Record<string, string> = {
@@ -34,21 +35,27 @@ type Props = {
 export default function ThumbnailGenerator({ title, content, onApply }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [styles, setStyles] = useState<StyleOption[]>([]);
+  // プロバイダ一覧（API GET から取得）
+  const [providers, setProviders] = useState<ProviderOption[]>([]);
+  // 選択中のプロバイダ（既定: gemini）
+  const [selectedProvider, setSelectedProvider] = useState<"gemini" | "openai">("gemini");
   const [selectedStyle, setSelectedStyle] = useState("realistic");
   const [generating, setGenerating] = useState(false);
-  // Geminiが生成した画像のDataURL（タイトル文字込み）
+  // 生成された画像のDataURL（タイトル文字込み）
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
   const [textAlign, setTextAlign] = useState<"left" | "center" | "right">("center");
   const [overlay, setOverlay] = useState(true);
+  const [includeTitle, setIncludeTitle] = useState(true);
   const [adjustPrompt, setAdjustPrompt] = useState("");
   const [error, setError] = useState("");
 
-  // スタイル一覧を取得
+  // スタイル一覧・プロバイダ一覧を取得
   useEffect(() => {
     fetch("/api/generate-thumbnail")
       .then((r) => r.json())
       .then((d) => {
         if (d.styles) setStyles(d.styles);
+        if (d.providers) setProviders(d.providers);
       })
       .catch(() => {});
   }, []);
@@ -72,8 +79,10 @@ export default function ThumbnailGenerator({ title, content, onApply }: Props) {
           title: title.trim(),
           content,
           style: selectedStyle,
+          provider: selectedProvider,
           textAlign,
           overlay,
+          includeTitle,
           adjustPrompt: adjustPrompt.trim() || undefined,
         }),
       });
@@ -140,6 +149,37 @@ export default function ThumbnailGenerator({ title, content, onApply }: Props) {
 
       {isOpen && (
         <div className="mt-2 md:mt-3 bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl border border-purple-200 p-3 md:p-5">
+          {/* プロバイダ選択（Gemini / OpenAI） */}
+          {providers.length > 0 && (
+            <div className="mb-3 md:mb-4">
+              <p className="text-xs font-semibold text-slate-600 mb-1.5 md:mb-2">生成エンジン</p>
+              <div className="grid grid-cols-2 gap-1.5 md:gap-2">
+                {providers.map((p) => {
+                  const isSelected = selectedProvider === p.key;
+                  return (
+                    <button
+                      key={p.key}
+                      type="button"
+                      onClick={() => setSelectedProvider(p.key)}
+                      className={`text-left px-3 py-2 rounded-lg border-2 transition-all ${
+                        isSelected
+                          ? "bg-white border-purple-500 shadow-sm"
+                          : "bg-white/60 border-slate-200 hover:border-slate-300"
+                      }`}
+                    >
+                      <p className={`text-[11px] md:text-xs font-bold leading-tight ${isSelected ? "text-purple-700" : "text-slate-700"}`}>
+                        {p.label}
+                      </p>
+                      <p className="text-[10px] md:text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-2">
+                        {p.description}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* スタイル選択 */}
           <div className="mb-3 md:mb-4">
             <p className="text-xs font-semibold text-slate-600 mb-1.5 md:mb-2">スタイル</p>
@@ -167,42 +207,59 @@ export default function ThumbnailGenerator({ title, content, onApply }: Props) {
             </div>
           </div>
 
-          {/* テキスト配置 & オーバーレイ - モバイルでは1行に */}
-          <div className="mb-3 md:mb-4 flex flex-wrap items-center gap-3 md:gap-4">
-            <div className="flex gap-1.5 md:gap-2">
-              {([
-                { key: "left" as const, label: "左", icon: <FiAlignLeft size={14} /> },
-                { key: "center" as const, label: "中央", icon: <FiAlignCenter size={14} /> },
-                { key: "right" as const, label: "右", icon: <FiAlignRight size={14} /> },
-              ]).map((a) => (
-                <button
-                  key={a.key}
-                  type="button"
-                  onClick={() => setTextAlign(a.key)}
-                  className={`flex items-center gap-1 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg border-2 text-[10px] md:text-xs font-semibold transition-all ${
-                    textAlign === a.key
-                      ? "bg-slate-800 border-slate-800 text-white shadow-sm"
-                      : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
-                  }`}
-                >
-                  {a.icon}
-                  <span className="hidden md:inline">{a.label}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* 透過オーバーレイ（インライン表示） */}
+          {/* タイトル文字を入れる - トグル（最上段） */}
+          <div className="mb-3 md:mb-4">
             <label className="flex items-center gap-2 cursor-pointer">
               <button
                 type="button"
-                onClick={() => setOverlay(!overlay)}
-                className={`relative w-9 h-[18px] md:w-10 md:h-5 rounded-full transition-colors ${overlay ? "bg-purple-600" : "bg-slate-300"}`}
+                onClick={() => setIncludeTitle(!includeTitle)}
+                className={`relative w-9 h-[18px] md:w-10 md:h-5 rounded-full transition-colors ${includeTitle ? "bg-purple-600" : "bg-slate-300"}`}
               >
-                <span className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] md:w-4 md:h-4 bg-white rounded-full shadow transition-transform ${overlay ? "translate-x-[18px] md:translate-x-5" : ""}`} />
+                <span className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] md:w-4 md:h-4 bg-white rounded-full shadow transition-transform ${includeTitle ? "translate-x-[18px] md:translate-x-5" : ""}`} />
               </button>
-              <span className="text-[10px] md:text-xs font-semibold text-slate-600">透過レイヤー</span>
+              <span className="text-[10px] md:text-xs font-semibold text-slate-600">タイトル文字を入れる</span>
             </label>
           </div>
+
+          {/* テキスト配置 & オーバーレイ - モバイルでは1行に */}
+          {/* タイトル文字なしの場合は配置・オーバーレイは無効化（タイトルが無いと意味がないため） */}
+          {includeTitle && (
+            <div className="mb-3 md:mb-4 flex flex-wrap items-center gap-3 md:gap-4">
+              <div className="flex gap-1.5 md:gap-2">
+                {([
+                  { key: "left" as const, label: "左", icon: <FiAlignLeft size={14} /> },
+                  { key: "center" as const, label: "中央", icon: <FiAlignCenter size={14} /> },
+                  { key: "right" as const, label: "右", icon: <FiAlignRight size={14} /> },
+                ]).map((a) => (
+                  <button
+                    key={a.key}
+                    type="button"
+                    onClick={() => setTextAlign(a.key)}
+                    className={`flex items-center gap-1 px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg border-2 text-[10px] md:text-xs font-semibold transition-all ${
+                      textAlign === a.key
+                        ? "bg-slate-800 border-slate-800 text-white shadow-sm"
+                        : "bg-white border-slate-200 text-slate-500 hover:border-slate-300"
+                    }`}
+                  >
+                    {a.icon}
+                    <span className="hidden md:inline">{a.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* 透過オーバーレイ（インライン表示） */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <button
+                  type="button"
+                  onClick={() => setOverlay(!overlay)}
+                  className={`relative w-9 h-[18px] md:w-10 md:h-5 rounded-full transition-colors ${overlay ? "bg-purple-600" : "bg-slate-300"}`}
+                >
+                  <span className={`absolute top-[2px] left-[2px] w-[14px] h-[14px] md:w-4 md:h-4 bg-white rounded-full shadow transition-transform ${overlay ? "translate-x-[18px] md:translate-x-5" : ""}`} />
+                </button>
+                <span className="text-[10px] md:text-xs font-semibold text-slate-600">透過レイヤー</span>
+              </label>
+            </div>
+          )}
 
           {/* 微調整プロンプト */}
           <div className="mb-3 md:mb-4">

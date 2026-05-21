@@ -25,6 +25,7 @@ type LineImageGeneratorProps = {
   showForGen: boolean;
   showForVip: boolean;
   showForVC: boolean;
+  showForWel: boolean;
 };
 
 type EditorTab = "edit" | "code";

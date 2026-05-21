@@ -106,41 +106,53 @@ a.btn.btn-c.btn-c-header--full:hover {
   font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, "sans-serif";
 }
 .article-detail > h1 {
-  font-size: 30px;
+  font-size: 24px;
   font-weight: 800;
   font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, "sans-serif";
+}
+/* PC版（768px以上）の記事タイトル */
+@media (min-width: 768px) {
+  .article-detail > h1 {
+    font-size: 32px;
+  }
 }
 .article-detail [data-article-content] {
   font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, "sans-serif";
 }
 .article-detail [data-article-content] h2 {
   box-sizing: inherit;
-  font-size: 24px !important;
+  font-size: 20px !important;
   font-weight: 800 !important;
-  margin-top: 28px !important;
-  margin-bottom: 28px !important;
+  margin: 30px 0 !important;
   padding-top: 0 !important;
   padding-bottom: 15px !important;
   line-height: 29.6px !important;
   border-bottom: 2px solid #bbb !important;
 }
 .article-detail [data-article-content] h3 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
+  margin: 30px 0;
 }
 .article-detail [data-article-content] h4 {
   font-size: 20px;
   font-weight: 800;
-  margin-top: 1.25rem;
-  margin-bottom: 0.5rem;
+  margin: 30px 0;
 }
 .article-detail [data-article-content] p {
   font-size: 16px;
-  font-weight: 300;
-  line-height: 1.5;
-  padding: 15px 0;
+  font-weight: 400;
+  /* スマホ版（基本） */
+  margin: 30px 0;
+  line-height: 1.8rem;
+  padding: 0;
+}
+/* PC版（768px以上） */
+@media (min-width: 768px) {
+  .article-detail [data-article-content] p {
+    margin: 36px 0;
+    line-height: 2rem;
+  }
 }
 /* インラインスタイル装飾（太字・下線・色・マーカー等） */
 .prose strong,
@@ -158,8 +170,18 @@ a.btn.btn-c.btn-c-header--full:hover {
 .prose ol { list-style: decimal; }
 .prose li {
   font-size: 16px;
-  line-height: 1.5;
-  padding: 5px 0;
+  font-weight: 400;
+  /* スマホ版（基本） */
+  line-height: 1.8rem;
+  margin: 8px 0;
+  padding: 0;
+}
+/* PC版（768px以上） */
+@media (min-width: 768px) {
+  .prose li {
+    line-height: 2rem;
+    margin: 10px 0;
+  }
 }
 /* 記事詳細ページ：・なしリスト */
 .article-detail [data-article-content] ul.list-none { list-style: none; padding-left: 0; }
@@ -213,7 +235,7 @@ a.btn.btn-c.btn-c-header--full:hover {
 .prose .quote--purple { border-left-color: #a855f7; }
 .prose .quote--gray { border-left-color: #6b7280; }
 .prose .quote cite { font-size: 0.85rem; color: #94a3b8; display: block; margin-top: 0.5rem; }
-.prose .btn-wrap { text-align: center; margin: 1.5rem 0; }
+.prose .btn-wrap { text-align: center; margin: 1rem 0; }
 .prose .youtube-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 1.5rem 0; border-radius: 0.5rem; }
 .prose .youtube-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
@@ -230,6 +252,98 @@ a.btn.btn-c.btn-c-header--full:hover {
 @media (max-width: 768px) {
   [data-article-content] p br:not(.sp-only) {
     display: none;
+  }
+}
+
+/* ============================
+   ウェルネスチェックリスト (.benefit / .benefit-check-list)
+   - 参考: https://mrt.co.jp/wellness/
+   - .benefit: 金線枠 + 薄ゴールド背景の囲みボックス
+   - .benefit h3: 中央寄せのワインレッド見出し
+   - .benefit-check-list li: 左側に check.png アイコン
+   - 全媒体（/gen, /vip, /vc, /wel）で同じ装飾になる
+   - カスタムエディタ機能から HTML スニペットとして挿入
+   ============================ */
+.prose .benefit,
+[data-article-content] .benefit {
+  margin: 2.25rem 0 !important;
+  padding: 1.5rem 1.75rem !important;
+  background: rgba(176, 138, 62, 0.06) !important;
+  border: 1px solid #c9b58a !important;
+  border-radius: 0 !important;
+}
+.prose .benefit h3,
+[data-article-content] .benefit h3 {
+  font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Sawarabi Mincho", "Noto Serif JP", serif !important;
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  color: #3d0f1d !important;
+  text-align: center !important;
+  letter-spacing: 0.08em !important;
+  margin: 0 0 1.25rem !important;
+  padding: 0 !important;
+}
+.prose .benefit ul,
+[data-article-content] .benefit ul {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.prose .benefit ul li,
+[data-article-content] .benefit ul li,
+.prose ul.benefit-check-list,
+[data-article-content] ul.benefit-check-list {
+  /* ul 自体の余白リセット（benefit-check-list 単独利用時） */
+}
+.prose ul.benefit-check-list,
+[data-article-content] ul.benefit-check-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 1.5rem 0 !important;
+}
+.prose .benefit ul li,
+[data-article-content] .benefit ul li,
+.prose ul.benefit-check-list li,
+[data-article-content] ul.benefit-check-list li {
+  position: relative;
+  list-style: none !important;
+  padding-left: 40px !important;
+  margin-bottom: 1.25rem !important;
+  line-height: 1.7;
+  font-weight: 500;
+  background-image: url("/check.png") !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 0.2em !important;
+  background-size: 24px 24px !important;
+}
+.prose .benefit ul li:last-child,
+[data-article-content] .benefit ul li:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* benefit 内に <img class="benefit-check"> を直接入れた場合（参考LP形式）は非表示にして
+   背景画像のチェックに統一する（インライン <img> による重複表示防止） */
+.prose .benefit .benefit-check,
+[data-article-content] .benefit .benefit-check {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  .prose .benefit,
+  [data-article-content] .benefit {
+    padding: 1.25rem 1rem !important;
+  }
+  .prose .benefit h3,
+  [data-article-content] .benefit h3 {
+    font-size: 1.15rem !important;
+  }
+  .prose .benefit ul li,
+  [data-article-content] .benefit ul li,
+  .prose ul.benefit-check-list li,
+  [data-article-content] ul.benefit-check-list li {
+    padding-left: 32px !important;
+    background-size: 20px 20px !important;
+    background-position: 0 0.25em !important;
   }
 }
 
@@ -272,162 +386,57 @@ a.btn.btn-c.btn-c-header--full:hover {
   }
 }
 
-/* ---- 青色グラデーション (btn-c) ---- */
+/* ============================
+   各色ボタン共通スタイル
+   - グラデーション背景 + 白文字
+   - full-width / border-radius:5px / shadow:0 2px 4px
+   ============================ */
 .prose a.btn-c,
-.prose a.btn.btn-c {
-  font-size: 1rem !important;
-  padding: 1.5rem 2.2rem !important;
-  min-width: 480px;
-  color: #fff !important;
-  border-radius: 100vh !important;
-  background: linear-gradient(to right, #007adf 0%, #00ecbc 100%) !important;
-  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
-}
-.prose a.btn-c::before {
-  content: "";
-  position: absolute;
-  top: calc(50% - 0.5rem);
-  right: 1rem;
-  width: 1rem;
-  height: 1rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-.prose a.btn-c:hover {
-  transform: scale(1.05);
-  color: #fff !important;
-  opacity: 0.9;
-}
-
-/* ---- ブラックグラデーション (btn-k) ---- */
+.prose a.btn.btn-c,
 .prose a.btn-k,
-.prose a.btn.btn-k {
-  font-size: 1rem !important;
-  padding: 1.5rem 2.2rem !important;
-  min-width: 480px;
-  color: #fff !important;
-  border-radius: 100vh !important;
-  background: linear-gradient(to right, #1f2937 0%, #374151 50%, #1f2937 100%) !important;
-  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
-}
-.prose a.btn-k::before {
-  content: "";
-  position: absolute;
-  top: calc(50% - 0.5rem);
-  right: 1rem;
-  width: 1rem;
-  height: 1rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-.prose a.btn-k:hover {
-  transform: scale(1.05);
-  color: #fff !important;
-  opacity: 0.9;
-}
-
-/* ---- 赤色グラデーション (btn-r) ---- */
+.prose a.btn.btn-k,
 .prose a.btn-r,
-.prose a.btn.btn-r {
-  font-size: 1rem !important;
-  padding: 1.5rem 2.2rem !important;
-  min-width: 480px;
-  color: #fff !important;
-  border-radius: 100vh !important;
-  background: linear-gradient(to right, #e53e3e 0%, #f56565 50%, #fc8181 100%) !important;
-  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
-}
-.prose a.btn-r::before {
-  content: "";
-  position: absolute;
-  top: calc(50% - 0.5rem);
-  right: 1rem;
-  width: 1rem;
-  height: 1rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-.prose a.btn-r:hover {
-  transform: scale(1.05);
-  color: #fff !important;
-  opacity: 0.9;
-}
-
-/* ---- 緑色グラデーション (btn-g) ---- */
+.prose a.btn.btn-r,
 .prose a.btn-g,
-.prose a.btn.btn-g {
-  font-size: 1rem !important;
-  padding: 1.5rem 2.2rem !important;
-  min-width: 480px;
-  color: #fff !important;
-  border-radius: 100vh !important;
-  background: linear-gradient(to right, #38a169 0%, #48bb78 50%, #68d391 100%) !important;
-  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
-}
-.prose a.btn-g::before {
-  content: "";
-  position: absolute;
-  top: calc(50% - 0.5rem);
-  right: 1rem;
-  width: 1rem;
-  height: 1rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-.prose a.btn-g:hover {
-  transform: scale(1.05);
-  color: #fff !important;
-  opacity: 0.9;
-}
-
-/* ---- オレンジグラデーション (btn-o) ---- */
+.prose a.btn.btn-g,
 .prose a.btn-o,
-.prose a.btn.btn-o {
-  font-size: 1rem !important;
-  padding: 1.5rem 2.2rem !important;
-  min-width: 480px;
-  color: #fff !important;
-  border-radius: 100vh !important;
-  background: linear-gradient(to right, #dd6b20 0%, #ed8936 50%, #f6ad55 100%) !important;
-  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
-}
-.prose a.btn-o::before {
-  content: "";
-  position: absolute;
-  top: calc(50% - 0.5rem);
-  right: 1rem;
-  width: 1rem;
-  height: 1rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/%3E%3Cpolyline points='15 3 21 3 21 9'/%3E%3Cline x1='10' y1='14' x2='21' y2='3'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-.prose a.btn-o:hover {
-  transform: scale(1.05);
-  color: #fff !important;
-  opacity: 0.9;
-}
-
-/* ---- 紫色グラデーション (btn-p) ---- */
+.prose a.btn.btn-o,
 .prose a.btn-p,
 .prose a.btn.btn-p {
-  font-size: 1rem !important;
-  padding: 1.5rem 2.2rem !important;
-  min-width: 480px;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  padding: 1.25rem 1.5rem !important;
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+  border-radius: 5px !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.1);
   color: #fff !important;
-  border-radius: 100vh !important;
-  background: linear-gradient(to right, #805ad5 0%, #9f7aea 50%, #b794f4 100%) !important;
-  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.2);
+  text-align: center !important;
+  transition: transform 0.2s, opacity 0.2s;
 }
+
+/* ::before の外部リンクアイコン（白色SVG・右端配置） */
+.prose a.btn-c,
+.prose a.btn.btn-c,
+.prose a.btn-k,
+.prose a.btn.btn-k,
+.prose a.btn-r,
+.prose a.btn.btn-r,
+.prose a.btn-g,
+.prose a.btn.btn-g,
+.prose a.btn-o,
+.prose a.btn.btn-o,
+.prose a.btn-p,
+.prose a.btn.btn-p {
+  position: relative;
+}
+.prose a.btn-c::before,
+.prose a.btn-k::before,
+.prose a.btn-r::before,
+.prose a.btn-g::before,
+.prose a.btn-o::before,
 .prose a.btn-p::before {
   content: "";
   position: absolute;
@@ -440,13 +449,56 @@ a.btn.btn-c.btn-c-header--full:hover {
   background-repeat: no-repeat;
   background-position: center;
 }
+
+/* hover 共通 */
+.prose a.btn-c:hover,
+.prose a.btn-k:hover,
+.prose a.btn-r:hover,
+.prose a.btn-g:hover,
+.prose a.btn-o:hover,
 .prose a.btn-p:hover {
-  transform: scale(1.05);
+  transform: scale(1.02);
   color: #fff !important;
   opacity: 0.9;
 }
 
-/* スマホ: 各色ボタンのpadding（上記の.btn-c等より後に書いて効かせる） */
+/* ---- 青色 (btn-c) ---- */
+.prose a.btn-c,
+.prose a.btn.btn-c {
+  background: linear-gradient(to right, #007adf 0%, #00ecbc 100%) !important;
+}
+
+/* ---- ブラック (btn-k) ---- */
+.prose a.btn-k,
+.prose a.btn.btn-k {
+  background: linear-gradient(to right, #1f2937 0%, #374151 50%, #1f2937 100%) !important;
+}
+
+/* ---- 赤 (btn-r) ---- */
+.prose a.btn-r,
+.prose a.btn.btn-r {
+  background: linear-gradient(to right, #e53e3e 0%, #f56565 50%, #fc8181 100%) !important;
+}
+
+/* ---- 緑 (btn-g) ---- */
+.prose a.btn-g,
+.prose a.btn.btn-g {
+  background: linear-gradient(to right, #38a169 0%, #48bb78 50%, #68d391 100%) !important;
+}
+
+/* ---- オレンジ (btn-o) ---- */
+.prose a.btn-o,
+.prose a.btn.btn-o {
+  background: linear-gradient(to right, #dd6b20 0%, #ed8936 50%, #f6ad55 100%) !important;
+}
+
+/* ---- 紫 (btn-p) ---- */
+.prose a.btn-p,
+.prose a.btn.btn-p {
+  background: linear-gradient(to right, #805ad5 0%, #9f7aea 50%, #b794f4 100%) !important;
+}
+
+/* スマホ: padding 少し縮める */
 @media (max-width: 768px) {
   .prose a.btn-c,
   .prose a.btn.btn-c,
@@ -460,7 +512,7 @@ a.btn.btn-c.btn-c-header--full:hover {
   .prose a.btn.btn-o,
   .prose a.btn-p,
   .prose a.btn.btn-p {
-    padding: 1rem 2rem !important;
+    padding: 1rem 1rem !important;
   }
 }
 

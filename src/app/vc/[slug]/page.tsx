@@ -121,11 +121,11 @@ export default async function VcPostPage({
       <Header variant="vc" homeHref="/vc" />
       <ClickTracker postId={post.id} source="vc" />
 
-      <main className="flex-1 max-w-3xl mx-auto px-4 sm:px-6 py-10 w-full">
+      <main className="flex-1 max-w-[640px] mx-auto px-4 sm:px-6 py-10 w-full">
 
         <article className="article-detail">
           {post.eyecatch && (
-            <div className="aspect-video relative rounded-sm overflow-hidden mb-8">
+            <div className="hidden md:block aspect-video relative rounded-sm overflow-hidden mb-8">
               <Image
                 src={post.eyecatch}
                 alt={post.title}
@@ -157,7 +157,7 @@ export default async function VcPostPage({
                 alt={post.writer.name}
                 width={230}
                 height={230}
-                className="object-contain w-[150px] md:w-[230px] h-auto"
+                className="object-contain w-[100px] md:w-[150px] h-auto"
               />
             </div>
           )}

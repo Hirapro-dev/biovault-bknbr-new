@@ -3,12 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 
 // POST: 閲覧数を記録（フロント側から呼び出し）
-// body: { postId, source?: "public" | "gen" | "vip" | "vc" }
+// body: { postId, source?: "public" | "gen" | "vip" | "vc" | "wel" }
 export async function POST(request: NextRequest) {
   try {
     const { postId, source } = await request.json();
     if (!postId) return NextResponse.json({ error: "postId required" }, { status: 400 });
-    const validSource = source === "gen" || source === "vip" || source === "vc" ? source : "public";
+    const validSource = source === "gen" || source === "vip" || source === "vc" || source === "wel" ? source : "public";
 
     await prisma.$transaction([
       prisma.pageView.create({ data: { postId, source: validSource } }),
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const postId = searchParams.get("postId");
   const period = searchParams.get("period") || "all"; // all, monthly, daily
-  const viewSource = searchParams.get("viewSource") || "all"; // all, public, gen, vip, vc
+  const viewSource = searchParams.get("viewSource") || "all"; // all, public, gen, vip, vc, wel
 
   try {
     if (postId) {
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         ...(dateFilter ? { createdAt: { gte: dateFilter } } : {}),
         ...(viewSource === "public"
           ? { OR: [{ source: "public" }, { source: null }] }
-          : viewSource === "gen" || viewSource === "vip" || viewSource === "vc"
+          : viewSource === "gen" || viewSource === "vip" || viewSource === "vc" || viewSource === "wel"
             ? { source: viewSource }
             : {}),
       };
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 媒体フィルター
-    const media = searchParams.get("media") || "all"; // all, gen, vip, vc
+    const media = searchParams.get("media") || "all"; // all, gen, vip, vc, wel
 
     // 媒体に応じた記事フィルター
     const postFilter = media === "gen"
@@ -144,12 +144,14 @@ export async function GET(request: NextRequest) {
         ? { showForVip: true }
         : media === "vc"
           ? { showForVC: true }
-          : {};
+          : media === "wel"
+            ? { showForWel: true }
+            : {};
 
     // 全体サマリー
     const posts = await prisma.post.findMany({
       where: postFilter,
-      select: { id: true, title: true, views: true, published: true, createdAt: true, scheduledAt: true, showForGen: true, showForVip: true, showForVC: true, writer: { select: { id: true, name: true } } },
+      select: { id: true, title: true, views: true, published: true, createdAt: true, scheduledAt: true, showForGen: true, showForVip: true, showForVC: true, showForWel: true, writer: { select: { id: true, name: true } } },
       orderBy: { views: "desc" },
     });
 

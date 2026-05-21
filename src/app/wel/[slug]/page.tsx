@@ -1,9 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import PostCard from "@/components/PostCard";
 import ClickTracker from "@/components/ClickTracker";
 import { formatDate } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
@@ -12,6 +9,9 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { FiArrowLeft, FiCalendar } from "react-icons/fi";
+import WelHeader from "../_components/WelHeader";
+import WelFooter from "../_components/WelFooter";
+import WelPostCard from "../_components/WelPostCard";
 
 type Writer = {
   id: number;
@@ -28,31 +28,30 @@ type Post = {
   eyecatch: string | null;
   published: boolean;
   createdAt: Date;
-  showForVip?: boolean;
+  showForWel?: boolean;
   showDate?: boolean;
   writer?: Writer | null;
 };
 
-async function getPost(slug: string): Promise<(Post & { showForVip?: boolean; showDate?: boolean }) | null> {
+async function getPost(slug: string): Promise<(Post & { showForWel?: boolean; showDate?: boolean }) | null> {
   try {
-    return await prisma.post.findUnique({
+    return (await prisma.post.findUnique({
       where: { slug },
       include: { writer: true },
-    }) as (Post & { showForVip?: boolean; showDate?: boolean }) | null;
+    })) as (Post & { showForWel?: boolean; showDate?: boolean }) | null;
   } catch {
     const row = await prisma.post.findUnique({
       where: { slug },
       select: {
         id: true, title: true, slug: true, content: true, excerpt: true,
         eyecatch: true, published: true, createdAt: true, writerId: true,
-        writer: true, showForVip: true,
+        writer: true, showForWel: true,
       },
     });
-    return row as (Post & { showForVip?: boolean; showDate?: boolean }) | null;
+    return row as (Post & { showForWel?: boolean; showDate?: boolean }) | null;
   }
 }
 
-// テキストを比較用に正規化（excerptを優先、軽量化のためcontent全文は不要）
 function toComparableText(excerpt: string | null, content: string, maxLen = 500): string {
   const raw = (excerpt || content).replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
   return raw.slice(0, maxLen);
@@ -74,22 +73,21 @@ function similarityScore(textA: string, textB: string): number {
   return a.size > 0 ? match / a.size : 0;
 }
 
-async function getRecommendedPosts(slug: string): Promise<Omit<Post, "content">[]> {
+async function getRecommendedPosts(slug: string) {
   const current = await prisma.post.findUnique({
-    where: { slug, published: true, showForVip: true },
+    where: { slug, published: true, showForWel: true },
     select: { id: true, excerpt: true, content: true },
   });
   if (!current) return [];
 
   const currentText = toComparableText(current.excerpt, current.content);
-  // content全文を取得せずexcerptのみで比較（DB転送量とメモリ削減）
   const candidates = await prisma.post.findMany({
-    where: { published: true, showForVip: true, id: { not: current.id } } as Prisma.PostWhereInput,
+    where: { published: true, showForWel: true, id: { not: current.id } } as Prisma.PostWhereInput,
     orderBy: { createdAt: "desc" },
     take: 15,
     select: {
       id: true, title: true, slug: true, excerpt: true,
-      eyecatch: true, published: true, createdAt: true, showDate: true,
+      eyecatch: true, published: true, createdAt: true, scheduledAt: true, showDate: true,
     },
   });
 
@@ -101,7 +99,7 @@ async function getRecommendedPosts(slug: string): Promise<Omit<Post, "content">[
   return withScore.slice(0, 3).map(({ score: _s, ...p }) => p);
 }
 
-export default async function VipPostPage({
+export default async function WelPostPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -111,21 +109,21 @@ export default async function VipPostPage({
   const post = await getPost(slug);
 
   if (!post || !post.published) notFound();
-  if (post.showForVip === false) notFound();
+  if (post.showForWel !== true) notFound();
 
   const recommendedPosts = await getRecommendedPosts(post.slug);
   const isHtml = post.content.includes("<") && post.content.includes(">");
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <Header variant="vip" homeHref="/vip" />
-      <ClickTracker postId={post.id} source="vip" />
+    <div className="min-h-screen flex flex-col">
+      <WelHeader />
+      <ClickTracker postId={post.id} source="wel" />
 
-      <main className="flex-1 max-w-[640px] mx-auto px-4 sm:px-6 py-10 w-full">
-
+      <main className="flex-1 mx-auto px-4 sm:px-6 py-4 w-full">
+        <div className="wel-box wel-box--article mx-auto">
         <article className="article-detail">
           {post.eyecatch && (
-            <div className="hidden md:block aspect-video relative rounded-sm overflow-hidden mb-8">
+            <div className="hidden md:block aspect-video relative overflow-hidden mb-8" style={{ border: "1px solid var(--wel-line)" }}>
               <Image
                 src={post.eyecatch}
                 alt={post.title}
@@ -137,18 +135,18 @@ export default async function VipPostPage({
             </div>
           )}
 
-          <h1 className="text-black mb-2 leading-tight">
+          <h1 className="wel-article-title text-2xl md:text-3xl mb-2">
             {post.title}
           </h1>
 
           {post.showDate !== false && (
-            <div className="flex items-center gap-2 text-sm text-black/40 mb-4">
+            <div className="wel-article-meta flex items-center gap-2 text-sm mb-4">
               <FiCalendar size={14} />
               <time>{formatDate(post.createdAt)}</time>
             </div>
           )}
 
-          <hr className="border-0 border-t border-solid my-6" style={{ borderColor: "#eee" }} />
+          <hr className="border-0 border-t border-solid my-6" style={{ borderColor: "var(--wel-line)" }} />
 
           {post.writer?.avatarUrl && (
             <div className="mb-8">
@@ -174,26 +172,24 @@ export default async function VipPostPage({
         </article>
 
         {recommendedPosts.length > 0 && (
-          <section className="mt-16 pt-10 border-t border-black/10">
-            <h2 className="text-xl font-black text-black mb-6">あなたにおすすめの記事</h2>
+          <section className="mt-16 pt-10 wel-border-line border-t">
+            <h2 className="wel-section-title text-xl mb-6">あなたにおすすめの記事</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {recommendedPosts.map((p) => (
-                <PostCard key={p.id} post={p} variant="grid" basePath="/vip" />
+                <WelPostCard key={p.id} post={p} variant="grid" />
               ))}
             </div>
           </section>
         )}
 
-        <Link
-          href="/vip"
-          className="inline-flex items-center gap-1 text-sm text-black/40 hover:text-black transition-colors mb-4"
-        >
+        <Link href="/wel" className="wel-back-link mt-10">
           <FiArrowLeft size={14} />
           記事一覧に戻る
         </Link>
+        </div>
       </main>
 
-      <Footer />
+      <WelFooter />
     </div>
   );
 }
