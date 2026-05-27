@@ -102,19 +102,10 @@ export const DEFAULT_STYLES: LineImageStyles = {
   paddingTop: 60,
 };
 
-export type Variant = "gen" | "vip";
-
-export const VARIANT_CONFIG: Record<Variant, { label: string; headerText: string; headerGradient: [string, string] }> = {
-  gen: {
-    label: "一般会員",
-    headerText: "投資の脱炭素マーケット.com",
-    headerGradient: ["#1e40af", "#3b82f6"],
-  },
-  vip: {
-    label: "正会員",
-    headerText: "投資の脱炭素マーケット.com",
-    headerGradient: ["#991b1b", "#ef4444"],
-  },
+/** ヘッダー設定（単一媒体に統合） */
+export const HEADER_CONFIG = {
+  text: "BioVaultバックナンバー",
+  gradient: ["#1e40af", "#3b82f6"] as const,
 };
 
 /** ボタングラデーションプリセット（記事エディタのbtn-*と同じ色味） */
@@ -152,12 +143,10 @@ function wrapText(
   lineHeight: number,
   align: TextAlign,
 ): number {
-  // テキスト揃え設定
   ctx.textAlign = align;
   const drawX = align === "center" ? x + maxWidth / 2 : align === "right" ? x + maxWidth : x;
 
   const lines: string[] = [];
-  // 改行で分割
   const paragraphs = text.split("\n");
   for (const para of paragraphs) {
     if (para === "") {
@@ -184,7 +173,6 @@ function wrapText(
     curY += lineHeight;
   }
 
-  // 描画後の合計高さを返す
   return lines.length * lineHeight;
 }
 
@@ -211,7 +199,6 @@ function drawCircleImage(ctx: CanvasRenderingContext2D, img: HTMLImageElement, c
   ctx.closePath();
   ctx.clip();
 
-  // カバーフィット
   const size = radius * 2;
   const aspect = img.width / img.height;
   let sw = size, sh = size;
@@ -222,7 +209,6 @@ function drawCircleImage(ctx: CanvasRenderingContext2D, img: HTMLImageElement, c
 
 /** Canvas APIでLINE配信画像を生成 */
 export async function generateLineImage(
-  variant: Variant,
   data: {
     title: string;
     body: string;
@@ -237,7 +223,6 @@ export async function generateLineImage(
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
-  const config = VARIANT_CONFIG[variant];
   const font = '"Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif';
 
   // ── 背景 ──
@@ -246,17 +231,17 @@ export async function generateLineImage(
 
   // ── ヘッダーバー（グラデーション） ──
   const headerGrad = ctx.createLinearGradient(0, 0, W, 0);
-  headerGrad.addColorStop(0, config.headerGradient[0]);
-  headerGrad.addColorStop(1, config.headerGradient[1]);
+  headerGrad.addColorStop(0, HEADER_CONFIG.gradient[0]);
+  headerGrad.addColorStop(1, HEADER_CONFIG.gradient[1]);
   ctx.fillStyle = headerGrad;
   ctx.fillRect(0, 0, W, styles.headerHeight);
 
-  // ヘッダーテキスト（媒体ごとに固定）
+  // ヘッダーテキスト
   ctx.fillStyle = styles.headerTextColor;
   ctx.font = `${styles.headerFontWeight} ${styles.headerFontSize}px ${font}`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(config.headerText, W / 2, styles.headerHeight / 2);
+  ctx.fillText(HEADER_CONFIG.text, W / 2, styles.headerHeight / 2);
 
   // ── メインコンテンツ ──
   let curY = styles.headerHeight + styles.paddingTop;
@@ -276,20 +261,16 @@ export async function generateLineImage(
     if (eyecatchImg) {
       const ecH = styles.eyecatchHeight;
       const ecW = contentWidth;
-      // アスペクト比を維持してカバーフィット
       const imgAspect = eyecatchImg.width / eyecatchImg.height;
       const boxAspect = ecW / ecH;
       let sx = 0, sy = 0, sw = eyecatchImg.width, sh = eyecatchImg.height;
       if (imgAspect > boxAspect) {
-        // 画像の方が横長 → 左右をクロップ
         sw = eyecatchImg.height * boxAspect;
         sx = (eyecatchImg.width - sw) / 2;
       } else {
-        // 画像の方が縦長 → 上下をクロップ
         sh = eyecatchImg.width / boxAspect;
         sy = (eyecatchImg.height - sh) / 2;
       }
-      // 角丸クリップ
       ctx.save();
       roundRect(ctx, styles.paddingX, curY, ecW, ecH, 16);
       ctx.clip();
@@ -314,10 +295,9 @@ export async function generateLineImage(
     if (avatarImg) {
       curY += styles.avatarMarginTop;
       const r = styles.avatarSize / 2;
-      // 揃え位置に応じてX座標を計算
       const avatarCx = styles.avatarAlign === "center" ? W / 2
         : styles.avatarAlign === "right" ? W - styles.paddingX - r
-        : styles.paddingX + r; // left
+        : styles.paddingX + r;
       drawCircleImage(ctx, avatarImg, avatarCx, curY + r, r);
       curY += styles.avatarSize + styles.avatarMarginBottom;
     }
@@ -336,7 +316,6 @@ export async function generateLineImage(
   const btnTextMetrics = ctx.measureText(styles.btnText);
   const emojiW = styles.btnEmoji ? styles.btnFontSize + 12 : 0;
   const btnContentW = btnTextMetrics.width + emojiW;
-  // btnWidthAutoがtrueの場合、本文テキストの横幅に合わせる
   const btnW = styles.btnWidthAuto ? contentWidth : btnContentW + styles.btnPaddingX * 2;
   const btnH = styles.btnFontSize + styles.btnPaddingY * 2;
   const btnX = styles.btnWidthAuto ? styles.paddingX : (W - btnW) / 2;
@@ -347,7 +326,7 @@ export async function generateLineImage(
   ctx.shadowBlur = 20;
   ctx.shadowOffsetY = 6;
 
-  // ボタン背景（3ストップグラデーション角丸）
+  // ボタン背景
   const btnGrad = ctx.createLinearGradient(btnX, btnY, btnX + btnW, btnY);
   btnGrad.addColorStop(0, styles.btnBgFrom);
   btnGrad.addColorStop(0.5, styles.btnBgMid);
@@ -356,7 +335,6 @@ export async function generateLineImage(
   roundRect(ctx, btnX, btnY, btnW, btnH, styles.btnRadius);
   ctx.fill();
 
-  // 影リセット
   ctx.shadowColor = "transparent";
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;
@@ -366,13 +344,11 @@ export async function generateLineImage(
   ctx.font = `800 ${styles.btnFontSize}px ${font}`;
   ctx.textBaseline = "middle";
   const textY = btnY + btnH / 2;
-  // テキスト＋絵文字をボタン内で中央配置
   const totalTextW = btnTextMetrics.width + emojiW;
   const textX = btnX + (btnW - totalTextW) / 2;
   ctx.textAlign = "left";
   ctx.fillText(styles.btnText, textX, textY);
 
-  // 絵文字
   if (styles.btnEmoji) {
     ctx.font = `${styles.btnFontSize + 4}px ${font}`;
     ctx.fillText(styles.btnEmoji, textX + btnTextMetrics.width + 12, textY);

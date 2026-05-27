@@ -26,7 +26,7 @@ export default async function ServicePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Header variant="gen" homeHref="/gen" />
+      <Header homeHref="/" />
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           {/* タイトルセクション（トップの Latest / PickUp と同じ書式） */}
@@ -76,8 +76,7 @@ export default async function ServicePage() {
               </ul>
             ) : (
               <div className="text-center py-20">
-                <span className="font-black text-5xl text-black/10">KWR</span>
-                <h2 className="text-lg font-bold text-black mt-4">
+                <h2 className="text-lg font-bold text-black">
                   サービスはまだ登録されていません
                 </h2>
                 <p className="text-black/40 text-sm mt-1">

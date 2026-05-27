@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { FiLock, FiUser, FiLogIn, FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function AdminLogin() {
@@ -41,8 +42,17 @@ export default function AdminLogin() {
     <div className="min-h-screen bg-bg flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/header_logo.png"
+              alt="BioVaultバックナンバー"
+              width={240}
+              height={48}
+              className="h-10 w-auto object-contain"
+              priority
+            />
+          </div>
           <h1 className="text-2xl font-bold text-text">管理画面ログイン</h1>
-          <p className="text-text-light text-sm mt-1">投資の脱炭素マーケット.com</p>
         </div>
 
         <form

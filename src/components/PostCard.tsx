@@ -14,12 +14,12 @@ type PostCardProps = {
     writer?: { name: string; avatarUrl: string | null } | null;
   };
   variant?: "list" | "grid" | "pickup";
-  /** 記事リンクのベースパス（例: /gen, /vip, /vc） */
+  /** 記事リンクのベースパス（既定: 空=ルート直下 `/{slug}`） */
   basePath?: string;
 };
 
-export default function PostCard({ post, variant = "grid", basePath }: PostCardProps) {
-  const href = basePath ? `${basePath}/${post.slug}` : `/gen/${post.slug}`;
+export default function PostCard({ post, variant = "grid", basePath = "" }: PostCardProps) {
+  const href = `${basePath}/${post.slug}`;
   if (variant === "pickup") {
     return (
       <Link href={href} className="group block">
@@ -34,7 +34,7 @@ export default function PostCard({ post, variant = "grid", basePath }: PostCardP
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-slate-200">
-              <span className="font-black text-4xl text-black/20">KWR</span>
+              <Image src="/header_logo.png" alt="" width={200} height={40} className="opacity-20 w-1/2 h-auto object-contain" />
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/20" />
@@ -77,7 +77,7 @@ export default function PostCard({ post, variant = "grid", basePath }: PostCardP
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-black/5">
-                <span className="font-black text-3xl text-black/20">KWR</span>
+                <Image src="/header_logo.png" alt="" width={200} height={40} className="opacity-25 w-3/5 h-auto object-contain" />
               </div>
             )}
           </div>
@@ -123,7 +123,7 @@ export default function PostCard({ post, variant = "grid", basePath }: PostCardP
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-black/5">
-              <span className="font-black text-2xl text-black/20">KWR</span>
+              <Image src="/header_logo.png" alt="" width={200} height={40} className="opacity-25 w-3/4 h-auto object-contain" />
             </div>
           )}
         </div>

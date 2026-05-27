@@ -7,14 +7,10 @@ import PostCard from "@/components/PostCard";
 import ClickTracker from "@/components/ClickTracker";
 import { formatDate } from "@/lib/utils";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { FiArrowLeft, FiCalendar } from "react-icons/fi";
-import WelHeader from "@/components/wellness/WelHeader";
-import WelFooter from "@/components/wellness/WelFooter";
-import WelPostCard from "@/components/wellness/WelPostCard";
 
 type Writer = {
   id: number;
@@ -31,8 +27,6 @@ type Post = {
   eyecatch: string | null;
   published: boolean;
   createdAt: Date;
-  showForGen?: boolean;
-  showForWel?: boolean;
   showDate?: boolean;
   writer?: Writer | null;
 };
@@ -44,15 +38,7 @@ async function getPost(slug: string): Promise<Post | null> {
       include: { writer: true },
     })) as Post | null;
   } catch {
-    const row = await prisma.post.findUnique({
-      where: { slug },
-      select: {
-        id: true, title: true, slug: true, content: true, excerpt: true,
-        eyecatch: true, published: true, createdAt: true, writerId: true,
-        writer: true, showForGen: true, showForWel: true,
-      },
-    });
-    return row as Post | null;
+    return null;
   }
 }
 
@@ -80,15 +66,14 @@ function similarityScore(textA: string, textB: string): number {
 
 async function getRecommendedPosts(slug: string): Promise<Omit<Post, "content">[]> {
   const current = await prisma.post.findUnique({
-    where: { slug, published: true, showForGen: true },
+    where: { slug, published: true },
     select: { id: true, excerpt: true, content: true },
   });
   if (!current) return [];
 
   const currentText = toComparableText(current.excerpt, current.content);
-  // content全文を取得せずexcerptのみで比較（DB転送量とメモリ削減）
   const candidates = await prisma.post.findMany({
-    where: { published: true, showForGen: true, id: { not: current.id } } as Prisma.PostWhereInput,
+    where: { published: true, id: { not: current.id } },
     orderBy: { createdAt: "desc" },
     take: 15,
     select: {
@@ -105,7 +90,7 @@ async function getRecommendedPosts(slug: string): Promise<Omit<Post, "content">[
   return withScore.slice(0, 3).map(({ score: _s, ...p }) => p);
 }
 
-export default async function GenPostPage({
+export default async function PostPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -115,98 +100,14 @@ export default async function GenPostPage({
   const post = await getPost(slug);
 
   if (!post || !post.published) notFound();
-  if (post.showForGen === false) notFound();
 
   const recommendedPosts = await getRecommendedPosts(post.slug);
   const isHtml = post.content.includes("<") && post.content.includes(">");
 
-  // ウェルネス対象記事ならウェルネスデザインで描画（媒体URL・計測ソースはgenを維持）
-  if (post.showForWel === true) {
-    return (
-      <div data-theme="wel" className="min-h-screen flex flex-col">
-        <WelHeader homeHref="/gen" />
-        <ClickTracker postId={post.id} source="gen" />
-
-        <main className="flex-1 mx-auto px-4 sm:px-6 py-4 w-full">
-          <div className="wel-box wel-box--article mx-auto">
-            <article className="article-detail">
-              {post.eyecatch && (
-                <div className="hidden md:block aspect-video relative overflow-hidden mb-8" style={{ border: "1px solid var(--wel-line)" }}>
-                  <Image
-                    src={post.eyecatch}
-                    alt={post.title}
-                    fill
-                    className="object-cover"
-                    priority
-                    sizes="(max-width: 768px) 100vw, 720px"
-                  />
-                </div>
-              )}
-
-              <h1 className="wel-article-title text-2xl md:text-3xl mb-2">
-                {post.title}
-              </h1>
-
-              {post.showDate !== false && (
-                <div className="wel-article-meta flex items-center gap-2 text-sm mb-4">
-                  <FiCalendar size={14} />
-                  <time>{formatDate(post.createdAt)}</time>
-                </div>
-              )}
-
-              <hr className="border-0 border-t border-solid my-6" style={{ borderColor: "var(--wel-line)" }} />
-
-              {post.writer?.avatarUrl && (
-                <div className="mb-8">
-                  <Image
-                    src={post.writer.avatarUrl}
-                    alt={post.writer.name}
-                    width={230}
-                    height={230}
-                    className="object-contain w-[100px] md:w-[150px] h-auto"
-                  />
-                </div>
-              )}
-
-              <div className="prose max-w-none" data-article-content>
-                {isHtml ? (
-                  <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                ) : (
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
-                    {post.content}
-                  </ReactMarkdown>
-                )}
-              </div>
-            </article>
-
-            {recommendedPosts.length > 0 && (
-              <section className="mt-16 pt-10 wel-border-line border-t">
-                <h2 className="wel-section-title text-xl mb-6">あなたにおすすめの記事</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                  {recommendedPosts.map((p) => (
-                    <WelPostCard key={p.id} post={{ ...p, slug: p.slug }} variant="grid" />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            <Link href="/gen" className="wel-back-link mt-10">
-              <FiArrowLeft size={14} />
-              記事一覧に戻る
-            </Link>
-          </div>
-        </main>
-
-        <WelFooter />
-      </div>
-    );
-  }
-
-  // 通常デザイン
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Header variant="gen" homeHref="/gen" />
-      <ClickTracker postId={post.id} source="gen" />
+      <Header homeHref="/" />
+      <ClickTracker postId={post.id} />
 
       <main className="flex-1 max-w-[640px] mx-auto px-4 sm:px-6 py-10 w-full">
 
@@ -265,14 +166,14 @@ export default async function GenPostPage({
             <h2 className="text-xl font-black text-black mb-6">あなたにおすすめの記事</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {recommendedPosts.map((p) => (
-                <PostCard key={p.id} post={p} variant="grid" basePath="/gen" />
+                <PostCard key={p.id} post={p} variant="grid" basePath="" />
               ))}
             </div>
           </section>
         )}
 
         <Link
-          href="/gen"
+          href="/"
           className="inline-flex items-center gap-1 text-sm text-black/40 hover:text-black transition-colors mb-4"
         >
           <FiArrowLeft size={14} />

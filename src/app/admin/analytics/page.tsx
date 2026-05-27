@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FiArrowLeft, FiEye, FiMousePointer, FiBarChart2, FiChevronDown, FiExternalLink } from "react-icons/fi";
 
-type PostSummary = { id: number; title: string; views: number; published: boolean; createdAt: string; scheduledAt: string | null; showForGen?: boolean; showForVip?: boolean; writer?: { id: number; name: string } | null };
+type PostSummary = { id: number; title: string; views: number; published: boolean; createdAt: string; scheduledAt: string | null; writer?: { id: number; name: string } | null };
 type Writer = { id: number; name: string };
 type PostDetail = {
   post: { id: number; title: string; views: number };
@@ -16,13 +16,6 @@ type PostDetail = {
 };
 
 type Period = "all" | "monthly" | "daily";
-type MediaTab = "gen" | "vip";
-
-// 媒体タブの定義
-const MEDIA_TABS: { key: MediaTab; label: string; color: string; bgColor: string }[] = [
-  { key: "gen", label: "一般会員", color: "text-blue-700", bgColor: "bg-blue-50" },
-  { key: "vip", label: "正会員", color: "text-emerald-700", bgColor: "bg-emerald-50" },
-];
 
 export default function AnalyticsPage() {
   return <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center"><p className="text-slate-400">読み込み中...</p></div>}><AnalyticsContent /></Suspense>;
@@ -39,10 +32,8 @@ function AnalyticsContent() {
   const [detail, setDetail] = useState<PostDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [period, setPeriod] = useState<Period>("daily");
-  const [viewSource, setViewSource] = useState<"all" | "public" | "gen" | "vip">("all");
   const [writers, setWriters] = useState<Writer[]>([]);
   const [filterWriterId, setFilterWriterId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<MediaTab>("gen");
 
   // 当日/7日間の統計
   const [todayViews, setTodayViews] = useState(0);
@@ -50,11 +41,10 @@ function AnalyticsContent() {
   const [last7DaysViews, setLast7DaysViews] = useState(0);
   const [last7DaysClicks, setLast7DaysClicks] = useState(0);
 
-  // 媒体タブ切り替え時にデータを取得
-  const fetchAnalytics = useCallback(async (media: MediaTab) => {
+  const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/analytics?media=${media}`);
+      const res = await fetch(`/api/analytics`);
       if (res.ok) {
         const data = await res.json();
         setPosts(data.posts);
@@ -73,7 +63,6 @@ function AnalyticsContent() {
     const init = async () => {
       const authRes = await fetch("/api/auth/me");
       if (!authRes.ok) { router.push("/admin/login"); return; }
-      // 執筆者一覧を取得
       try {
         const wRes = await fetch("/api/writers");
         if (wRes.ok) setWriters(await wRes.json());
@@ -82,43 +71,26 @@ function AnalyticsContent() {
       const qPostId = searchParams.get("postId");
       if (qPostId) setSelectedPost(parseInt(qPostId));
 
-      await fetchAnalytics(activeTab);
+      await fetchAnalytics();
     };
     init();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router, searchParams]);
 
-  // 媒体タブ切り替え時
-  useEffect(() => {
-    fetchAnalytics(activeTab);
-    // タブ切り替え時に選択中の記事をリセット
-    setSelectedPost(null);
-    setDetail(null);
-  }, [activeTab, fetchAnalytics]);
-
   useEffect(() => {
     if (selectedPost === null) { setDetail(null); return; }
     const loadDetail = async () => {
       setDetailLoading(true);
-      const res = await fetch(`/api/analytics?postId=${selectedPost}&period=${period}&viewSource=${viewSource}`);
+      const res = await fetch(`/api/analytics?postId=${selectedPost}&period=${period}`);
       if (res.ok) setDetail(await res.json());
       setDetailLoading(false);
     };
     loadDetail();
-  }, [selectedPost, period, viewSource]);
+  }, [selectedPost, period]);
 
   const filteredPosts = posts
     .filter((p) => (filterWriterId ? p.writer?.id === filterWriterId : true));
   const maxViews = Math.max(...filteredPosts.map((p) => p.views), 1);
-
-  const memberLabel = (p: PostSummary) => {
-    const g = p.showForGen !== false;
-    const f = p.showForVip !== false;
-    const parts: string[] = [];
-    if (g) parts.push("一般");
-    if (f) parts.push("正");
-    return parts.length > 0 ? parts.join("・") : "—";
-  };
 
   const formatPublishedAt = (p: PostSummary) => {
     if (p.published) return new Date(p.scheduledAt || p.createdAt).toLocaleDateString("ja-JP", { year: "numeric", month: "short", day: "numeric" });
@@ -136,24 +108,7 @@ function AnalyticsContent() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8 w-full min-w-0 box-border">
-        {/* 媒体タブ */}
-        <div className="flex gap-1 mb-6 bg-white rounded-lg border border-slate-200 p-1">
-          {MEDIA_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 px-4 py-2.5 rounded-md text-sm font-semibold transition-all ${
-                activeTab === tab.key
-                  ? `${tab.bgColor} ${tab.color} shadow-sm`
-                  : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* フィルター（執筆者のみ。会員フィルターはタブに統合） */}
+        {/* フィルター（執筆者のみ） */}
         {writers.length > 0 && (
           <div className="mb-6 flex flex-wrap items-center gap-3">
             <select
@@ -216,7 +171,6 @@ function AnalyticsContent() {
                       <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <p className="text-[11px] text-slate-500">公開日: {formatPublishedAt(post)}</p>
                         {post.writer && <span className="text-[11px] text-slate-400">| {post.writer.name}</span>}
-                        <span className="text-[11px] text-slate-500">| 会員: {memberLabel(post)}</span>
                       </div>
                       <div className="mt-1.5 w-full bg-slate-100 rounded-full h-1.5">
                         <div className="bg-blue-500 h-1.5 rounded-full transition-all" style={{ width: `${(post.views / maxViews) * 100}%` }} />
@@ -245,16 +199,6 @@ function AnalyticsContent() {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                       <h3 className="font-bold text-sm text-slate-900 break-words min-w-0">{detail.post.title}</h3>
                       <div className="flex flex-wrap items-center gap-2 shrink-0">
-                        <div className="relative">
-                          <select value={viewSource} onChange={(e) => setViewSource(e.target.value as "all" | "public" | "gen" | "vip")}
-                            className="appearance-none text-xs border border-slate-200 rounded-lg px-3 py-1.5 pr-7 bg-white focus:outline-none focus:border-blue-400 cursor-pointer">
-                            <option value="all">全会員</option>
-                            <option value="public">公開のみ</option>
-                            <option value="gen">一般会員</option>
-                            <option value="vip">正会員</option>
-                          </select>
-                          <FiChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                        </div>
                         <div className="relative">
                           <select value={period} onChange={(e) => setPeriod(e.target.value as Period)}
                             className="appearance-none text-xs border border-slate-200 rounded-lg px-3 py-1.5 pr-7 bg-white focus:outline-none focus:border-blue-400 cursor-pointer">

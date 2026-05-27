@@ -2,23 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 
-/** isPickup カラムがまだないDB用の select（GET/PUT で共通） */
-const selectWithoutPickup = {
-  id: true,
-  title: true,
-  slug: true,
-  content: true,
-  excerpt: true,
-  eyecatch: true,
-  published: true,
-  scheduledAt: true,
-  views: true,
-  writerId: true,
-  createdAt: true,
-  updatedAt: true,
-  writer: true,
-};
-
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -28,25 +11,26 @@ export async function GET(
 
   if (isNaN(numId)) {
     try {
-      const post = await prisma.post.findUnique({ where: { slug: id }, include: { writer: true, categories: { include: { category: true } } } });
+      const post = await prisma.post.findUnique({
+        where: { slug: id },
+        include: { writer: true, categories: { include: { category: true } } },
+      });
       if (!post) return NextResponse.json({ error: "記事が見つかりません" }, { status: 404 });
       return NextResponse.json(post);
-  } catch {
-    const post = await prisma.post.findUnique({ where: { slug: id }, select: selectWithoutPickup });
-      if (!post) return NextResponse.json({ error: "記事が見つかりません" }, { status: 404 });
-      return NextResponse.json({ ...post, isPickup: false, showForGen: true, showForVip: true, showForWel: false, showDate: true });
+    } catch {
+      return NextResponse.json({ error: "記事の取得に失敗しました" }, { status: 500 });
     }
   }
 
   try {
-    const post = await prisma.post.findUnique({ where: { id: numId }, include: { writer: true, categories: { include: { category: true } } } });
+    const post = await prisma.post.findUnique({
+      where: { id: numId },
+      include: { writer: true, categories: { include: { category: true } } },
+    });
     if (!post) return NextResponse.json({ error: "記事が見つかりません" }, { status: 404 });
     return NextResponse.json(post);
   } catch {
-    // 旧カラムがない時のフォールバック
-    const post = await prisma.post.findUnique({ where: { id: numId }, select: selectWithoutPickup });
-    if (!post) return NextResponse.json({ error: "記事が見つかりません" }, { status: 404 });
-    return NextResponse.json({ ...post, isPickup: false, showForGen: true, showForVip: true, showForWel: false, showDate: true });
+    return NextResponse.json({ error: "記事の取得に失敗しました" }, { status: 500 });
   }
 }
 
@@ -60,7 +44,7 @@ export async function PUT(
   const { id } = await params;
   try {
     const body = await request.json();
-    const { title, content, excerpt, eyecatch, published, scheduledAt, writerId, isPickup, showForGen, showForVip, showForWel, showDate, categoryIds } = body;
+    const { title, content, excerpt, eyecatch, published, scheduledAt, writerId, isPickup, showDate, categoryIds } = body;
 
     const isScheduled = scheduledAt && new Date(scheduledAt) > new Date();
 
@@ -71,9 +55,6 @@ export async function PUT(
       eyecatch?: string | null;
       published?: boolean;
       isPickup?: boolean;
-      showForGen?: boolean;
-      showForVip?: boolean;
-      showForWel?: boolean;
       showDate?: boolean;
       scheduledAt?: Date | null;
       writerId?: number | null;
@@ -81,9 +62,6 @@ export async function PUT(
       eyecatch: eyecatch || undefined,
       published: isScheduled ? false : (published ?? undefined),
       isPickup: isPickup !== undefined ? !!isPickup : undefined,
-      showForGen: showForGen !== undefined ? !!showForGen : undefined,
-      showForVip: showForVip !== undefined ? !!showForVip : undefined,
-      showForWel: showForWel !== undefined ? !!showForWel : undefined,
       showDate: showDate !== undefined ? !!showDate : undefined,
       scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
       writerId: writerId !== undefined ? (writerId ? parseInt(writerId) : null) : undefined,
@@ -94,40 +72,22 @@ export async function PUT(
       data.excerpt = excerpt || content.replace(/<[^>]*>/g, "").slice(0, 200);
     } else if (excerpt !== undefined) data.excerpt = excerpt;
 
-    try {
-      // カテゴリが指定された場合は洗い替え
-      if (Array.isArray(categoryIds)) {
-        const postId = parseInt(id);
-        await prisma.postCategory.deleteMany({ where: { postId } });
-        if (categoryIds.length > 0) {
-          await prisma.postCategory.createMany({
-            data: categoryIds.map((cid: number) => ({ postId, categoryId: cid })),
-          });
-        }
+    // カテゴリが指定された場合は洗い替え
+    if (Array.isArray(categoryIds)) {
+      const postId = parseInt(id);
+      await prisma.postCategory.deleteMany({ where: { postId } });
+      if (categoryIds.length > 0) {
+        await prisma.postCategory.createMany({
+          data: categoryIds.map((cid: number) => ({ postId, categoryId: cid })),
+        });
       }
-      const post = await prisma.post.update({
-        where: { id: parseInt(id) },
-        data,
-        include: { writer: true, categories: { include: { category: true } } },
-      });
-      return NextResponse.json(post);
-    } catch {
-      // 旧カラムがない時は該当フィールドを外して再試行
-      const { isPickup: _o1, showForGen: _o2, showForVip: _o3, showForWel: _o4, showDate: _o5, ...dataFallback } = data;
-      const post = await prisma.post.update({
-        where: { id: parseInt(id) },
-        data: dataFallback,
-        select: selectWithoutPickup,
-      });
-      return NextResponse.json({
-        ...post,
-        isPickup: isPickup !== undefined ? !!isPickup : false,
-        showForGen: showForGen !== undefined ? !!showForGen : true,
-        showForVip: showForVip !== undefined ? !!showForVip : true,
-        showForWel: showForWel !== undefined ? !!showForWel : false,
-        showDate: showDate !== undefined ? !!showDate : true,
-      });
     }
+    const post = await prisma.post.update({
+      where: { id: parseInt(id) },
+      data,
+      include: { writer: true, categories: { include: { category: true } } },
+    });
+    return NextResponse.json(post);
   } catch {
     return NextResponse.json({ error: "記事の更新に失敗しました" }, { status: 500 });
   }

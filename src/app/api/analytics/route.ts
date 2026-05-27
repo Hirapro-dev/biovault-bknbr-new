@@ -3,15 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { getAuthUser } from "@/lib/auth";
 
 // POST: 閲覧数を記録（フロント側から呼び出し）
-// body: { postId, source?: "public" | "gen" | "vip" | "wel" }
+// body: { postId }
 export async function POST(request: NextRequest) {
   try {
-    const { postId, source } = await request.json();
+    const { postId } = await request.json();
     if (!postId) return NextResponse.json({ error: "postId required" }, { status: 400 });
-    const validSource = source === "gen" || source === "vip" || source === "wel" ? source : "public";
 
     await prisma.$transaction([
-      prisma.pageView.create({ data: { postId, source: validSource } }),
+      prisma.pageView.create({ data: { postId } }),
       prisma.post.update({ where: { id: postId }, data: { views: { increment: 1 } } }),
     ]);
 
@@ -29,7 +28,6 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const postId = searchParams.get("postId");
   const period = searchParams.get("period") || "all"; // all, monthly, daily
-  const viewSource = searchParams.get("viewSource") || "all"; // all, public, gen, vip, wel
 
   try {
     if (postId) {
@@ -55,11 +53,6 @@ export async function GET(request: NextRequest) {
       const viewWhere = {
         postId: id,
         ...(dateFilter ? { createdAt: { gte: dateFilter } } : {}),
-        ...(viewSource === "public"
-          ? { OR: [{ source: "public" }, { source: null }] }
-          : viewSource === "gen" || viewSource === "vip" || viewSource === "wel"
-            ? { source: viewSource }
-            : {}),
       };
 
       const views = await prisma.pageView.findMany({
@@ -84,7 +77,6 @@ export async function GET(request: NextRequest) {
         viewsByDateRaw[key] = (viewsByDateRaw[key] || 0) + 1;
       });
 
-      // クリック数も同様に日付別にグループ化
       const clicksByDateRaw: Record<string, number> = {};
       clicks.forEach((c) => {
         const key = groupBy === "month"
@@ -93,7 +85,7 @@ export async function GET(request: NextRequest) {
         clicksByDateRaw[key] = (clicksByDateRaw[key] || 0) + 1;
       });
 
-      // 日別・月別は全期間を0埋めして返す（グラフで棒が正しく並ぶように）
+      // 日別・月別は全期間を0埋めして返す
       const viewsByDate: Record<string, number> = {};
       const clicksByDate: Record<string, number> = {};
       if (period === "daily" && dateFilter) {
@@ -134,46 +126,23 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ post, viewsByDate, clicksByDate, clicksByUrl, totalClicks: clicks.length });
     }
 
-    // 媒体フィルター
-    const media = searchParams.get("media") || "all"; // all, gen, vip, wel
-
-    // 媒体に応じた記事フィルター
-    const postFilter = media === "gen"
-      ? { showForGen: true }
-      : media === "vip"
-        ? { showForVip: true }
-        : media === "wel"
-          ? { showForWel: true }
-          : {};
-
     // 全体サマリー
     const posts = await prisma.post.findMany({
-      where: postFilter,
-      select: { id: true, title: true, views: true, published: true, createdAt: true, scheduledAt: true, showForGen: true, showForVip: true, showForWel: true, writer: { select: { id: true, name: true } } },
+      select: {
+        id: true, title: true, views: true, published: true, createdAt: true, scheduledAt: true,
+        writer: { select: { id: true, name: true } },
+      },
       orderBy: { views: "desc" },
     });
 
-    // 媒体別の閲覧数・クリック数を集計
-    const sourceFilter = media !== "all" ? { source: media } : {};
     const postIds = posts.map((p) => p.id);
 
     const totalViews = postIds.length > 0
-      ? await prisma.pageView.count({ where: { postId: { in: postIds }, ...sourceFilter } })
+      ? await prisma.pageView.count({ where: { postId: { in: postIds } } })
       : 0;
     const totalClicks = postIds.length > 0
-      ? await prisma.click.count({ where: { postId: { in: postIds }, ...sourceFilter } })
+      ? await prisma.click.count({ where: { postId: { in: postIds } } })
       : 0;
-
-    // 記事ごとの媒体別閲覧数を集計
-    let viewsByPost: Record<number, number> = {};
-    if (postIds.length > 0 && media !== "all") {
-      const grouped = await prisma.pageView.groupBy({
-        by: ["postId"],
-        where: { postId: { in: postIds }, source: media },
-        _count: { id: true },
-      });
-      grouped.forEach((g) => { viewsByPost[g.postId] = g._count.id; });
-    }
 
     // 当日の統計
     const now = new Date();
@@ -190,16 +159,15 @@ export async function GET(request: NextRequest) {
     const postIdFilter = postIds.length > 0 ? { postId: { in: postIds } } : { postId: -1 };
 
     const [todayViews, todayClicks, last7DaysViews, last7DaysClicks] = await Promise.all([
-      prisma.pageView.count({ where: { ...postIdFilter, ...sourceFilter, ...dateRangeToday } }),
-      prisma.click.count({ where: { ...postIdFilter, ...sourceFilter, ...dateRangeToday } }),
-      prisma.pageView.count({ where: { ...postIdFilter, ...sourceFilter, ...dateRange7Days } }),
-      prisma.click.count({ where: { ...postIdFilter, ...sourceFilter, ...dateRange7Days } }),
+      prisma.pageView.count({ where: { ...postIdFilter, ...dateRangeToday } }),
+      prisma.click.count({ where: { ...postIdFilter, ...dateRangeToday } }),
+      prisma.pageView.count({ where: { ...postIdFilter, ...dateRange7Days } }),
+      prisma.click.count({ where: { ...postIdFilter, ...dateRange7Days } }),
     ]);
 
     return NextResponse.json({
       posts, totalViews, totalClicks,
       todayViews, todayClicks, last7DaysViews, last7DaysClicks,
-      viewsByPost,
     });
   } catch {
     return NextResponse.json({ error: "解析データの取得に失敗しました" }, { status: 500 });

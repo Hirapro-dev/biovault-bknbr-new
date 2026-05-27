@@ -2,20 +2,20 @@
 
 import { useEffect, useRef } from "react";
 
-/** 閲覧元: 一般会員(gen) / 正会員(vip) */
-export default function ClickTracker({ postId, source }: { postId: number; source: "gen" | "vip" }) {
+/** ページビューおよび本文内リンクのクリックを記録する */
+export default function ClickTracker({ postId }: { postId: number }) {
   const tracked = useRef(false);
 
-  // 閲覧数記録（source で一般会員/正会員を別計測）
+  // 閲覧数記録
   useEffect(() => {
     if (tracked.current) return;
     tracked.current = true;
     fetch("/api/analytics", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ postId, source }),
+      body: JSON.stringify({ postId }),
     }).catch(() => {});
-  }, [postId, source]);
+  }, [postId]);
 
   // リンククリック追跡
   useEffect(() => {
@@ -33,7 +33,6 @@ export default function ClickTracker({ postId, source }: { postId: number; sourc
           postId,
           url,
           label: link.textContent?.trim().slice(0, 100) || null,
-          source,
         }),
       }).catch(() => {});
     };

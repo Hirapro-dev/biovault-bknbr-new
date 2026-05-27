@@ -44,9 +44,6 @@ export default function NewPost() {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
   const [isPickup, setIsPickup] = useState(false);
-  const [showForGen, setShowForGen] = useState(true);
-  const [showForVip, setShowForVip] = useState(true);
-  const [showForWel, setShowForWel] = useState(false);
   const [showDate, setShowDate] = useState(true);
   const [googleDocDialogOpen, setGoogleDocDialogOpen] = useState(false);
   const [googleDocUrl, setGoogleDocUrl] = useState("");
@@ -519,7 +516,7 @@ export default function NewPost() {
       const finalContent = [...topHtmlParts, editorContent, ...bottomHtmlParts].join("\n");
       const res = await fetch("/api/posts", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, content: finalContent, eyecatch: eyecatch || null, published: shouldPublish ?? published, isPickup, showForGen, showForVip, showForWel, showDate, scheduledAt: scheduledAt ? new Date(scheduledAt + ":00+09:00").toISOString() : null, writerId: writerId || null, categoryIds: selectedCategoryIds }),
+        body: JSON.stringify({ title, content: finalContent, eyecatch: eyecatch || null, published: shouldPublish ?? published, isPickup, showDate, scheduledAt: scheduledAt ? new Date(scheduledAt + ":00+09:00").toISOString() : null, writerId: writerId || null, categoryIds: selectedCategoryIds }),
       });
       if (res.ok) router.push("/admin/dashboard");
       else { const d = await res.json(); alert(d.error || "保存に失敗"); }
@@ -617,24 +614,6 @@ export default function NewPost() {
         </div>
 
         <div className="mb-4 md:mb-6">
-          <p className="text-xs font-semibold text-slate-500 mb-2">表示先会員</p>
-          <div className="flex flex-wrap gap-3 md:gap-4">
-            <label className="flex items-center gap-1.5 md:gap-2 cursor-pointer">
-              <input type="checkbox" checked={showForGen} onChange={(e) => setShowForGen(e.target.checked)} className="rounded border-slate-300 text-blue-500 focus:ring-blue-400" />
-              <span className="text-xs md:text-sm font-medium text-slate-700">一般<span className="hidden md:inline">会員</span></span>
-            </label>
-            <label className="flex items-center gap-1.5 md:gap-2 cursor-pointer">
-              <input type="checkbox" checked={showForVip} onChange={(e) => setShowForVip(e.target.checked)} className="rounded border-slate-300 text-blue-500 focus:ring-blue-400" />
-              <span className="text-xs md:text-sm font-medium text-slate-700">正会員</span>
-            </label>
-            <label className="flex items-center gap-1.5 md:gap-2 cursor-pointer">
-              <input type="checkbox" checked={showForWel} onChange={(e) => setShowForWel(e.target.checked)} className="rounded border-slate-300 text-pink-500 focus:ring-pink-400" />
-              <span className="text-xs md:text-sm font-medium text-slate-700">ウェルネス</span>
-            </label>
-          </div>
-        </div>
-
-        <div className="mb-4 md:mb-6">
           <label className="block text-xs font-semibold text-slate-500 mb-2">アイキャッチ画像</label>
           <ThumbnailGenerator
             title={title}
@@ -663,9 +642,6 @@ export default function NewPost() {
           writerName={writers.find((w) => String(w.id) === writerId)?.name || ""}
           writerAvatarUrl={writers.find((w) => String(w.id) === writerId)?.avatarUrl || null}
           eyecatchUrl={eyecatch || null}
-          showForGen={showForGen}
-          showForVip={showForVip}
-          showForWel={showForWel}
         />
 
         <div className="mb-3">

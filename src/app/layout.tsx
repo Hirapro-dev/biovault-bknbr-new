@@ -10,8 +10,8 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: "投資の脱炭素マーケット.com",
-  description: "投資に関する最新情報をお届けするブログメディア",
+  title: "BioVaultバックナンバー",
+  description: "BioVaultバックナンバー",
   robots: { index: false, follow: false },
   icons: {
     icon: "/favicon.ico",

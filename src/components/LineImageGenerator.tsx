@@ -9,10 +9,8 @@ import { extractPlainText } from "@/lib/extract-plain-text";
 import {
   generateLineImage,
   DEFAULT_STYLES,
-  VARIANT_CONFIG,
   BTN_GRADIENT_PRESETS,
   type LineImageStyles,
-  type Variant,
   type TextAlign,
 } from "@/lib/line-image-canvas";
 
@@ -22,9 +20,6 @@ type LineImageGeneratorProps = {
   writerName: string;
   writerAvatarUrl: string | null;
   eyecatchUrl: string | null;
-  showForGen: boolean;
-  showForVip: boolean;
-  showForWel: boolean;
 };
 
 type EditorTab = "edit" | "code";
@@ -68,7 +63,6 @@ function stylesToCode(s: LineImageStyles): string {
 function codeToStyles(code: string): LineImageStyles | null {
   try {
     const parsed = JSON.parse(code);
-    // 必須キーの存在チェック
     if (typeof parsed.titleFontSize !== "number") return null;
     return { ...DEFAULT_STYLES, ...parsed };
   } catch {
@@ -135,8 +129,6 @@ export default function LineImageGenerator({
   writerName,
   writerAvatarUrl,
   eyecatchUrl,
-  showForGen,
-  showForVip,
 }: LineImageGeneratorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [editorTab, setEditorTab] = useState<EditorTab>("edit");
@@ -158,21 +150,15 @@ export default function LineImageGenerator({
 
   // 画像化の状態
   const [generating, setGenerating] = useState(false);
-  const [generatedImages, setGeneratedImages] = useState<Record<Variant, string | null>>({ gen: null, vip: null });
-  const [activeVariant, setActiveVariant] = useState<Variant>("gen");
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
   // テンプレート
-  const [templates, setTemplates] = useState<SavedTemplate[]>([]);
+  const [, setTemplates] = useState<SavedTemplate[]>([]);
   const [templateSaving, setTemplateSaving] = useState(false);
 
   // プレビュー画像（リアルタイム）
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [previewLoading, setPreviewLoading] = useState(false);
-
-  // チェックされた媒体
-  const enabledVariants: Variant[] = [];
-  if (showForGen) enabledVariants.push("gen");
-  if (showForVip) enabledVariants.push("vip");
 
   // スタイル更新ヘルパー
   const updateStyle = useCallback(<K extends keyof LineImageStyles>(key: K, value: LineImageStyles[K]) => {
@@ -190,7 +176,6 @@ export default function LineImageGenerator({
       .then((r) => (r.ok ? r.json() : []))
       .then((data: SavedTemplate[]) => {
         setTemplates(data);
-        // デフォルトテンプレートがあれば適用
         const def = data.find((t) => t.isDefault);
         if (def && !initialized) {
           try {
@@ -212,7 +197,7 @@ export default function LineImageGenerator({
       setEditBody(bodyText || "");
       setEditWriter(writerName || "");
       setInitialized(true);
-      setGeneratedImages({ gen: null, vip: null });
+      setGeneratedImage(null);
     }
     if (!isOpen) {
       setInitialized(false);
@@ -237,23 +222,15 @@ export default function LineImageGenerator({
     }
   }, [eyecatchUrl]);
 
-  // activeVariant が enabledVariants に含まれない場合
-  useEffect(() => {
-    if (enabledVariants.length > 0 && !enabledVariants.includes(activeVariant)) {
-      setActiveVariant(enabledVariants[0]);
-    }
-  }, [enabledVariants, activeVariant]);
-
   // プレビュー更新（debounce付き）
   useEffect(() => {
-    if (!isOpen || enabledVariants.length === 0) return;
-    // 生成済みの場合はプレビューを更新しない
-    if (generatedImages[activeVariant]) return;
+    if (!isOpen) return;
+    if (generatedImage) return;
 
     setPreviewLoading(true);
     const timer = setTimeout(async () => {
       try {
-        const url = await generateLineImage(activeVariant, {
+        const url = await generateLineImage({
           title: editTitle,
           body: editBody,
           writerName: editWriter,
@@ -267,59 +244,42 @@ export default function LineImageGenerator({
       setPreviewLoading(false);
     }, 300);
     return () => clearTimeout(timer);
-  }, [isOpen, activeVariant, editTitle, editBody, editWriter, avatarDataUrl, eyecatchDataUrl, styles, enabledVariants, generatedImages]);
+  }, [isOpen, editTitle, editBody, editWriter, avatarDataUrl, eyecatchDataUrl, styles, generatedImage]);
 
-  /** 全媒体の画像を一括生成（Canvas API） */
-  const handleGenerateAll = useCallback(async () => {
-    if (enabledVariants.length === 0) return;
+  /** 画像を生成（Canvas API） */
+  const handleGenerate = useCallback(async () => {
     setGenerating(true);
-    setGeneratedImages({ gen: null, vip: null });
+    setGeneratedImage(null);
 
-    const results: Record<Variant, string | null> = { gen: null, vip: null };
-
-    for (const v of enabledVariants) {
-      try {
-        const dataUrl = await generateLineImage(v, {
-          title: editTitle,
-          body: editBody,
-          writerName: editWriter,
-          avatarDataUrl,
-          eyecatchDataUrl,
-        }, styles);
-        results[v] = dataUrl;
-      } catch (err) {
-        console.error(`LINE画像生成エラー (${v}):`, err);
-      }
+    try {
+      const dataUrl = await generateLineImage({
+        title: editTitle,
+        body: editBody,
+        writerName: editWriter,
+        avatarDataUrl,
+        eyecatchDataUrl,
+      }, styles);
+      setGeneratedImage(dataUrl);
+    } catch (err) {
+      console.error("LINE画像生成エラー:", err);
+      alert("画像生成に失敗しました。");
     }
 
-    setGeneratedImages(results);
     setGenerating(false);
-
-    const failCount = enabledVariants.filter((v) => !results[v]).length;
-    if (failCount > 0) {
-      alert(`${failCount}件の画像生成に失敗しました。`);
-    }
-  }, [enabledVariants, editTitle, editBody, editWriter, avatarDataUrl, eyecatchDataUrl, styles]);
+  }, [editTitle, editBody, editWriter, avatarDataUrl, eyecatchDataUrl, styles]);
 
   /** ダウンロード */
-  const handleDownload = (v: Variant) => {
-    const url = generatedImages[v];
-    if (!url) return;
+  const handleDownload = () => {
+    if (!generatedImage) return;
     const link = document.createElement("a");
     const slug = editTitle.slice(0, 20).replace(/[^a-zA-Z0-9\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/g, "_");
-    link.download = `line-${v}-${slug}-${Date.now()}.png`;
-    link.href = url;
+    link.download = `line-${slug}-${Date.now()}.png`;
+    link.href = generatedImage;
     link.click();
   };
 
-  const handleDownloadAll = () => {
-    for (const v of enabledVariants) {
-      if (generatedImages[v]) handleDownload(v);
-    }
-  };
-
   const handleReEdit = () => {
-    setGeneratedImages({ gen: null, vip: null });
+    setGeneratedImage(null);
   };
 
   /** テンプレートとして保存 */
@@ -350,8 +310,7 @@ export default function LineImageGenerator({
     }
   };
 
-  const generatedCount = enabledVariants.filter((v) => generatedImages[v]).length;
-  const isGenerated = generatedCount > 0;
+  const isGenerated = !!generatedImage;
 
   return (
     <div className="mb-4 md:mb-6">
@@ -365,43 +324,13 @@ export default function LineImageGenerator({
 
       {isOpen && (
         <div className="mt-3 bg-white border border-slate-200 rounded-lg overflow-hidden">
-          {/* 対象媒体の表示 */}
-          <div className="flex flex-wrap items-center gap-3 p-4 border-b border-slate-100">
-            <label className="text-xs font-semibold text-slate-500">対象媒体:</label>
-            <div className="flex gap-1.5 flex-wrap">
-              {enabledVariants.length > 0 ? enabledVariants.map((v) => (
-                <span key={v} className={`px-3 py-1 text-xs rounded-full font-medium ${
-                  v === "gen" ? "bg-blue-100 text-blue-700" : v === "vip" ? "bg-red-100 text-red-700" : "bg-gray-200 text-gray-700"
-                }`}>{VARIANT_CONFIG[v].label}</span>
-              )) : (
-                <span className="text-xs text-slate-400">媒体が選択されていません</span>
-              )}
-            </div>
-          </div>
-
-          {enabledVariants.length === 0 ? (
-            <div className="p-8 text-center text-sm text-slate-400">媒体チェックボックスから配信先を選んでください</div>
-          ) : !isGenerated ? (
+          {!isGenerated ? (
             /* ===== プレビュー＆編集モード ===== */
             <div className="p-4">
-              {/* 媒体タブ切り替え */}
-              {enabledVariants.length > 1 && (
-                <div className="flex gap-1 mb-4">
-                  {enabledVariants.map((v) => (
-                    <button key={v} type="button" onClick={() => setActiveVariant(v)}
-                      className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${
-                        activeVariant === v
-                          ? v === "gen" ? "bg-blue-600 text-white" : v === "vip" ? "bg-red-600 text-white" : "bg-gray-700 text-white"
-                          : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                      }`}>{VARIANT_CONFIG[v].label}</button>
-                  ))}
-                </div>
-              )}
-
               <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4">
                 {/* 左: プレビュー（Canvas生成画像） */}
                 <div className="flex flex-col items-center">
-                  <p className="text-[10px] text-slate-400 mb-2">プレビュー（{VARIANT_CONFIG[activeVariant].label}）</p>
+                  <p className="text-[10px] text-slate-400 mb-2">プレビュー</p>
                   <div className="border border-slate-200 rounded-lg overflow-hidden shadow-sm bg-slate-50" style={{ width: "260px", height: "520px" }}>
                     {previewUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -505,10 +434,6 @@ export default function LineImageGenerator({
                       {/* ヘッダー */}
                       <fieldset className="space-y-2 border border-slate-100 rounded-lg p-3">
                         <legend className="text-[11px] font-semibold text-slate-500 px-1">ヘッダー</legend>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] text-slate-500 w-20 shrink-0">テキスト</span>
-                          <span className="text-xs text-slate-600">{VARIANT_CONFIG[activeVariant].headerText}</span>
-                        </div>
                         <NumInput label="フォントサイズ" value={styles.headerFontSize} onChange={(v) => updateStyle("headerFontSize", v)} min={16} max={60} />
                         <div className="flex items-center gap-2">
                           <span className="text-[11px] text-slate-500 w-20 shrink-0">太さ</span>
@@ -617,7 +542,6 @@ export default function LineImageGenerator({
                         <NumInput label="上下パディング" value={styles.btnPaddingY} onChange={(v) => updateStyle("btnPaddingY", v)} min={10} max={60} />
                         <NumInput label="角丸" value={styles.btnRadius} onChange={(v) => updateStyle("btnRadius", v)} min={0} max={999} />
                         <ColorInput label="テキスト色" value={styles.btnTextColor} onChange={(v) => updateStyle("btnTextColor", v)} />
-                        {/* グラデーションプリセット */}
                         <div>
                           <span className="text-[11px] text-slate-500 block mb-1.5">グラデーション</span>
                           <div className="flex flex-wrap gap-1.5">
@@ -641,7 +565,6 @@ export default function LineImageGenerator({
                                   }`}
                                   title={preset.label}
                                 >
-                                  {/* グラデーションプレビュー丸 */}
                                   <span
                                     className="w-5 h-5 rounded-full border border-white shadow-sm shrink-0"
                                     style={{ background: `linear-gradient(135deg, ${preset.from}, ${preset.mid}, ${preset.to})` }}
@@ -652,7 +575,6 @@ export default function LineImageGenerator({
                             })}
                           </div>
                         </div>
-                        {/* カスタムカラー（詳細設定） */}
                         <details className="mt-1">
                           <summary className="text-[10px] text-slate-400 cursor-pointer hover:text-slate-600">カスタムカラー設定</summary>
                           <div className="space-y-2 mt-2 pl-2 border-l-2 border-slate-100">
@@ -665,7 +587,6 @@ export default function LineImageGenerator({
                       </fieldset>
                     </div>
                   ) : (
-                    /* コードタブ */
                     <div className="space-y-3">
                       <p className="text-[10px] text-slate-400">スタイルをJSON形式で直接編集できます。変更後「適用」をクリックしてください。</p>
                       <textarea value={codeText} onChange={(e) => setCodeText(e.target.value)} rows={20}
@@ -679,12 +600,12 @@ export default function LineImageGenerator({
                   )}
 
                   {/* 画像生成ボタン */}
-                  <button type="button" onClick={handleGenerateAll} disabled={generating || !editTitle.trim()}
+                  <button type="button" onClick={handleGenerate} disabled={generating || !editTitle.trim()}
                     className="w-full mt-4 py-3 text-sm font-semibold bg-black text-white rounded-lg hover:bg-black/80 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors">
                     {generating ? (
                       <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> 画像を生成しています...</>
                     ) : (
-                      <><FiCamera size={16} /> {enabledVariants.length > 1 ? `${enabledVariants.length}媒体の画像を生成` : "画像を生成"}</>
+                      <><FiCamera size={16} /> 画像を生成</>
                     )}
                   </button>
                 </div>
@@ -701,36 +622,20 @@ export default function LineImageGenerator({
                 </button>
               </div>
 
-              <div className={`grid gap-4 ${generatedCount >= 3 ? "grid-cols-1 md:grid-cols-3" : generatedCount === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 max-w-sm mx-auto"}`}>
-                {enabledVariants.map((v) =>
-                  generatedImages[v] ? (
-                    <div key={v} className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
-                      <div className={`text-center py-1.5 text-xs font-semibold text-white ${
-                        v === "gen" ? "bg-blue-600" : v === "vip" ? "bg-red-600" : "bg-gray-700"
-                      }`}>{VARIANT_CONFIG[v].label}</div>
-                      <div className="p-2 flex justify-center">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={generatedImages[v]!} alt={`${VARIANT_CONFIG[v].label} LINE配信画像`} className="w-[200px] md:w-[240px] h-auto rounded shadow-sm" />
-                      </div>
-                      <div className="flex justify-center pb-2">
-                        <button type="button" onClick={() => handleDownload(v)}
-                          className={`px-3 py-1 text-xs text-white rounded-lg flex items-center gap-1.5 ${
-                            v === "gen" ? "bg-blue-600 hover:bg-blue-700" : v === "vip" ? "bg-red-600 hover:bg-red-700" : "bg-gray-700 hover:bg-gray-800"
-                          }`}><FiDownload size={12} /> DL</button>
-                      </div>
-                    </div>
-                  ) : null
-                )}
-              </div>
-
-              {generatedCount > 1 && (
-                <div className="flex justify-center mt-4">
-                  <button type="button" onClick={handleDownloadAll}
-                    className="px-5 py-2 text-sm bg-black text-white rounded-lg hover:bg-black/80 flex items-center gap-2">
-                    <FiDownload size={14} /> すべてダウンロード（1040×2080px）
-                  </button>
+              <div className="max-w-sm mx-auto">
+                <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50">
+                  <div className="p-2 flex justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={generatedImage!} alt="LINE配信画像" className="w-[200px] md:w-[240px] h-auto rounded shadow-sm" />
+                  </div>
+                  <div className="flex justify-center pb-2">
+                    <button type="button" onClick={handleDownload}
+                      className="px-3 py-1 text-xs text-white rounded-lg flex items-center gap-1.5 bg-black hover:bg-black/80">
+                      <FiDownload size={12} /> ダウンロード（1040×2080px）
+                    </button>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           )}
         </div>

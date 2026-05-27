@@ -17,9 +17,6 @@ model Post {
   eyecatch       String?
   published      Boolean          @default(false)
   isPickup       Boolean          @default(false)
-  showForGen     Boolean          @default(true)
-  showForVip     Boolean          @default(true)
-  showForWel     Boolean          @default(false)
   showDate       Boolean          @default(true)
   scheduledAt    DateTime?
   views          Int              @default(0)
@@ -32,9 +29,6 @@ model Post {
   categories     PostCategory[]
 
   @@index([published, createdAt])
-  @@index([published, showForGen, createdAt])
-  @@index([published, showForVip, createdAt])
-  @@index([published, showForWel, createdAt])
   @@index([published, isPickup, createdAt])
   @@index([published, scheduledAt])
   @@index([views])
@@ -76,7 +70,6 @@ model Click {
   postId    Int
   url       String
   label     String?
-  source    String?  // "gen" | "vip" | "wel" クリック元の媒体
   createdAt DateTime @default(now())
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
@@ -87,7 +80,6 @@ model Click {
 model PageView {
   id        Int      @id @default(autoincrement())
   postId    Int
-  source    String?  // "gen" | "vip" | "wel" 閲覧元（一般会員/正会員/ウェルネス）
   createdAt DateTime @default(now())
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
 
@@ -112,7 +104,6 @@ model Banner {
   label    String
   url      String
   imageUrl String?
-  media    String @default("all") // "all" | "gen" | "vip" 表示対象の媒体
   order    Int    @default(0)
 
   @@map("banners")

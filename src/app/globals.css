@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "../styles/wellness.css";
 
 @theme inline {
   --color-primary: #1e40af;
@@ -83,14 +82,6 @@ a.btn.btn-c .btn-c-icon svg {
     width: 0.875rem;
     height: 0.875rem;
   }
-}
-
-/* 正会員 /v/ 用：ヘッダーお問い合わせボタンを赤グラデーション */
-a.btn.btn-c.btn-c-header--full {
-  background: linear-gradient(to right, #dc2626 0%, #f87171 50%, #fca5a5 100%) !important;
-}
-a.btn.btn-c.btn-c-header--full:hover {
-  color: #fff;
 }
 
 .prose h1 { font-size: 1.875rem; font-weight: 700; margin-bottom: 1rem; line-height: 1.3; }
@@ -257,12 +248,10 @@ a.btn.btn-c.btn-c-header--full:hover {
 }
 
 /* ============================
-   ウェルネスチェックリスト (.benefit / .benefit-check-list)
-   - 参考: https://mrt.co.jp/wellness/
+   特典チェックリスト (.benefit / .benefit-check-list)
    - .benefit: 金線枠 + 薄ゴールド背景の囲みボックス
    - .benefit h3: 中央寄せのワインレッド見出し
    - .benefit-check-list li: 左側に check.png アイコン
-   - 全媒体（/gen, /vip, /vc, /wel）で同じ装飾になる
    - カスタムエディタ機能から HTML スニペットとして挿入
    ============================ */
 .prose .benefit,
